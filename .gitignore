@@ -1,0 +1,27 @@
+# Env
+.env
+.env.local
+.env.*.local
+
+# Node / Next / Vite
+node_modules/
+.next/
+dist/
+.vercel/
+
+# Rust
+target/
+
+# Python
+__pycache__/
+.venv/
+*.pyc
+
+# Claude Code
+.claude/settings.local.json
+.claude/worktrees/
+
+# OS / editors
+.DS_Store
+.idea/
+*.log
