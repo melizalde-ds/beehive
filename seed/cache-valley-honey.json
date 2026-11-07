@@ -55,6 +55,8 @@
     }
   ],
   "agents": [
-    { "agent_id": "muse-demo", "name": "Muse", "operator": "Kaylee Jensen's personal agent (demo)" }
+    { "agent_id": "muse-demo", "name": "Muse", "operator": "Kaylee Jensen's personal agent (demo)" },
+    { "agent_id": "claude-code-personal-agent", "name": "Claude Code", "operator": "Kaylee Jensen's personal agent (demo)" },
+    { "agent_id": "agy-agent", "name": "Antigravity", "operator": "Kaylee Jensen's personal agent (demo)" }
   ]
 }
