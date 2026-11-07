@@ -1,7 +1,12 @@
 //! Rehearsal helpers. Everything is in memory, so a reset is a fresh `Store`, and a seed
 //! replays the demo path through the real gate so a cold dashboard already shows the wow.
 
-use axum::{Json, extract::State};
+use std::collections::HashMap;
+
+use axum::{
+    Json,
+    extract::{Query, State},
+};
 use serde_json::json;
 
 use crate::{
@@ -10,10 +15,21 @@ use crate::{
 };
 
 /// `POST /demo/reset`: forget every session, return and evidence link, and the replay and
-/// rate-limit memory. Doesn't re-seed: the next agent run would block its own $36.
-pub async fn reset(State(state): State<AppState>) -> Json<ReturnList> {
+/// rate-limit memory, then re-seed the cold open so any viewer can undo a tamper.
+/// `?empty=1` (the agent's `--reset`) skips the re-seed, so the agent's own $36 can pass.
+pub async fn reset(
+    State(state): State<AppState>,
+    Query(query): Query<HashMap<String, String>>,
+) -> Json<ReturnList> {
     *state.store() = Store::default();
-    tracing::info!("demo reset: store cleared");
+    if query.get("empty").is_some_and(|v| v == "1") {
+        tracing::info!("demo reset: store cleared");
+    } else {
+        match seed(&state).await {
+            Ok(()) => tracing::info!("demo reset: store re-seeded"),
+            Err(error) => tracing::warn!(%error, "demo re-seed failed; the dashboard is empty"),
+        }
+    }
     let _ = state.returns_changed.send(());
     gate::list_returns(State(state)).await
 }

@@ -1,6 +1,7 @@
 // The personal agent: Kaylee's agent finds the shop through PAP, asks for consent,
 // then files returns. It only asks; the Rust gate decides.
-// Run: node agent/agent.ts [--reset]   (Node 24 runs TypeScript directly, no install)
+// Run: node agent/agent.ts [--reset] [--skip-candle]   (Node 24 runs TypeScript directly, no install)
+// --skip-candle: file only the $120 and its replay, for when Muse already filed the $36.
 
 import type {
   GateRequest,
@@ -39,8 +40,8 @@ function show(label: string, r: GateResponse) {
 
 async function main() {
   if (process.argv.includes("--reset")) {
-    // Rehearsal only, not part of PAP: empties the shop's in-memory demo state.
-    await call("/demo/reset", {});
+    // Rehearsal only, not part of PAP: empties the shop's in-memory demo state (no cold-open seed).
+    await call("/demo/reset?empty=1", {});
     console.log("0. Reset the demo shop");
   }
   console.log(`1. Discover ${BASE}/.well-known/poppy.json`);
@@ -79,11 +80,27 @@ async function main() {
     amount,
   });
 
+  // A failed return (Redo down, a 502) is shown and the run goes on: the blocks don't need Redo.
+  const fileReturn = async (label: string, req: GateRequest) => {
+    try {
+      const response = await call<GateResponse>(shop.endpoints.returns, req);
+      show(label, response);
+      return response;
+    } catch (error) {
+      console.log(`  ERROR ${label}: ${(error as Error).message}`);
+    }
+  };
+
   console.log("3. File the returns");
   const candles = file("o_1", "damaged", 36);
-  show("$36 candle set arrived broken", await call<GateResponse>(shop.endpoints.returns, candles));
-  show("$120 honeycomb crate", await call<GateResponse>(shop.endpoints.returns, file("o_2", "changed_mind", 120)));
-  show("replay of the candle request", await call<GateResponse>(shop.endpoints.returns, candles));
+  const crate = file("o_2", "changed_mind", 120);
+  const candlePassed =
+    !process.argv.includes("--skip-candle") &&
+    (await fileReturn("$36 candle set arrived broken", candles))?.gate === "pass";
+  await fileReturn("$120 honeycomb crate", crate);
+  // Only a request that passed blocks as a duplicate; one Redo refused would just retry Redo.
+  if (candlePassed) await fileReturn("replay of the candle request", candles);
+  else await fileReturn("replay of the crate request", crate);
 }
 
 main().catch((e: Error) => {
