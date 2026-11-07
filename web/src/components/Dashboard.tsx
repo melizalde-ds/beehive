@@ -3,7 +3,9 @@ import { useResetDemo, useReturns } from '@/api/returns'
 import { useShop } from '@/api/shop'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { checkLabel } from '@/lib/labels'
 import { cn } from '@/lib/utils'
+import type { ReturnRecord } from '@/types/generated/beehive'
 import { ReturnCard } from './ReturnCard'
 
 export function Dashboard() {
@@ -63,11 +65,33 @@ export function Dashboard() {
         </div>
       )}
 
+      {/* On a phone the third card sits below the fold; this line names every block up front. */}
+      {returns.data && returns.data.returns.length > 0 && (
+        <BlockSummary returns={returns.data.returns} />
+      )}
+
       {/* The API lists newest first; oldest first reads as the story: pass, cap block, duplicate. */}
+      {/* Reset re-issues bh_0001…, so key by filing time too: a re-seeded card remounts with its proof closed. */}
       {returns.data?.returns
         .slice()
         .reverse()
-        .map((record) => <ReturnCard key={record.return_id} record={record} />)}
+        .map((record) => <ReturnCard key={`${record.return_id}@${record.at}`} record={record} />)}
     </main>
+  )
+}
+
+function BlockSummary({ returns }: { returns: ReturnRecord[] }) {
+  const passed = returns.filter((record) => record.gate === 'pass').length
+  // Oldest first, to match the card order.
+  const blocked = returns.filter((record) => record.gate === 'block').reverse()
+  const reasons = [...new Set(blocked.map((record) => (record.blocked_by ? checkLabel[record.blocked_by] : 'gate')))]
+  return (
+    <p className="text-sm font-medium">
+      <span className="text-success">{passed} passed</span>
+      {' · '}
+      <span className="text-destructive">
+        {blocked.length} blocked{reasons.length > 0 && ` (${reasons.join(', ')})`}
+      </span>
+    </p>
   )
 }
