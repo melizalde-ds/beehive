@@ -93,6 +93,13 @@ pub async fn run(state: &AppState, req: GateRequest) -> Result<GateResponse, App
             record.gate = GateDecision::Block;
             record.blocked_by = Some(check);
             record.gate_reason = reason.clone();
+            // A request id is single-use once the token checks out: resending a blocked
+            // request blocks as a replay, not on the same rule again.
+            if verdict.passed.contains(&GateCheck::Idempotency) {
+                store
+                    .by_request
+                    .insert(req.request_id.to_string(), return_id.clone());
+            }
             return finish(&mut store, record, events, None, reason);
         };
         // Reserve so a duplicate sent while Redo is busy is still blocked.
