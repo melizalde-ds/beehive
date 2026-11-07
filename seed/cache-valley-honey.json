@@ -14,7 +14,8 @@
   "customers": [
     { "id": "c_1", "name": "Kaylee Jensen", "email": "kaylee.jensen@example.com", "city": "Logan, UT" },
     { "id": "c_2", "name": "Tomás Ortega", "email": "tomas.ortega@example.com", "city": "Provo, UT" },
-    { "id": "c_3", "name": "Ruth Hales", "email": "ruth.hales@example.com", "city": "Brigham City, UT" }
+    { "id": "c_3", "name": "Ruth Hales", "email": "ruth.hales@example.com", "city": "Brigham City, UT" },
+    { "id": "c_4", "name": "Redo Judge", "email": "redo@email.com", "city": "Logan, UT" }
   ],
   "orders": [
     {
@@ -50,6 +51,18 @@
     {
       "id": "o_6", "customer_id": "c_1",
       "placed_at": "2026-10-08T17:36:00-06:00", "delivered_at": "2026-10-13T12:48:00-06:00",
+      "items": [{ "product_id": "p_crate", "qty": 1, "unit_price": 120.0 }],
+      "total": 120.0
+    },
+    {
+      "id": "o_7", "customer_id": "c_4",
+      "placed_at": "2026-10-30T12:05:00-06:00", "delivered_at": "2026-11-04T15:30:00-07:00",
+      "items": [{ "product_id": "p_candles", "qty": 1, "unit_price": 36.0 }],
+      "total": 36.0
+    },
+    {
+      "id": "o_8", "customer_id": "c_4",
+      "placed_at": "2026-10-21T10:40:00-06:00", "delivered_at": "2026-10-25T13:10:00-06:00",
       "items": [{ "product_id": "p_crate", "qty": 1, "unit_price": 120.0 }],
       "total": 120.0
     }
