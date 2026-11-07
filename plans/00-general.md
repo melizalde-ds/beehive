@@ -20,9 +20,10 @@
 | 06 | Wire end to end: agent script → front door → gate → Redo mock → dashboard, live. **Checkpoint 8:30** | Yes (needs 02-05) | | 8:15-9:00 | All | `phase-06-wire.md` | Checkpoint met in phase 05's walk (mock, at 375 px). Real mode: the return shows in Redo's dashboard (2026-11-06), but as $0.00 store credit (see decision 15). Walked in real mode at 375 px on 2026-11-06 20:20 (agent script + Playwright consent): $36 passed, Redo return `6aee99198a41ad54330e8cfe` open; $120 and the replay blocked; `verify` 6/6. Done: the proof note in Redo's Activity feed carries the same gate hash (`7752d692…`) |
 | 07 | Wow moment hardened: $120 block, replay block, verify + tamper. Seeded, working cold, repeatable reset, readable on a phone | Yes | | 9:00-10:00 | Technical, Overall | `phase-07-wow.md` | Built, not committed: `POST /demo/reset` (agent `--reset` + dashboard button), `BEEHIVE_DEMO_SEED=1` cold open. Walked in real mode at 375 px |
 | 08 | Last mile: README (identity, live link, demo steps, cites PAP, the Redo API, libraries, starter kit, links `docs/findings.md`; tagline and the Hash-Chain Comb from the brand guide), Utah styling polish (brand guide picks below), live URL (ask first), backup recording, audit, personas, rehearse 3x, submission fields. **Freeze 11:25** | Yes | | 10:00-11:25 | Overall | `phase-08-last-mile.md` | Planned: deploy in progress; `/wow` findings (2026-11-06) sorted into harden, clean, beautify, with 3 questions to ask |
+| S2 | Stretch: hardening. Agent keeps going after a Redo error, one safe retry on transient Redo errors, shared state on the live URL, quieter restarts in real mode | No (after 08 deploy) | 08 polish | after deploy | Technical, Overall | `stretch-hardening.md` | Planned, 3 questions at start |
 | S1 | Stretch: validate discovery with a third-party PAP client (datalayer SDK), then try real Meta Muse. Timeboxed, **hard stop 10:30** | No (after 06) | 07 | 9:30-10:30 | Commerce, Overall | `stretch-muse.md` | Planned, open decisions 8-12 first |
 
-Real Redo keys work and the call order is tested (`docs/redo-integration.md`). Phase 03 builds both modes. Which mode the live demo runs is still open.
+Real Redo keys work and the call order is tested (`docs/redo-integration.md`). Phase 03 builds both modes. The live demo runs real Redo (decided 2026-11-06), with the mock as the startup fallback.
 
 ## Requirements
 
@@ -80,7 +81,7 @@ Not in the brief, so cut (no rubric line, not on the demo path):
 6. ~~`dotenvy`~~. Answered: no. Export the vars in the shell (`set -a; . ../.env; set +a`).
 7. ~~`*:Zone.Identifier`~~. Moot: no such files are left.
 8. **Discovery shape for S1** (schema change, ask first): the SDK targets PAP draft 0.3 (`protocol_version`, `organization`, `agent.protocols`, `auth.issuer`). Our `PoppyDiscovery` is our own `0.1-draft` shape (`pap_version`, `merchant`, `endpoints`), so the SDK check fails until the schema changes. Phase 04 is building against the current shape.
-9. **Deploy target** (ask first): S1 assumes AWS (Lightsail/EC2 + Caddy TLS) by 9:30. That moves the live URL out of phase 08 and overlaps phase 07 (wow hardening).
+9. ~~Deploy target~~. Answered 2026-11-06: one Lightsail box ($5/month) with Caddy, real Redo, free `sslip.io` hostname; buy a domain only if Muse rejects it. Plan in `phase-08-last-mile.md`, section 1.
 10. **Python for S1**: the general plan says no Python. The SDK script is the one exception, outside the demo path.
 11. **Muse's `agent_id`** (seed change, ask first): the gate only knows `muse-demo`. Real Muse sends its own id and would be blocked by `agent_identity` until it's in the seed.
 12. **OAuth issuer metadata**: S1 needs a static `/.well-known/oauth-authorization-server`. The brief cuts real OAuth, so if Muse follows it to sign in, S1 stops (see `stretch-muse.md`).

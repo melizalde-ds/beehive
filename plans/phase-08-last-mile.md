@@ -20,18 +20,50 @@ Run with `/wow` on a cold mock instance, fresh Chromium profile, 375×667. Full 
 
 ## Checklist
 
-### 1. Deploy (in progress)
+### 1. Deploy (about 45-60 min)
 
-- [ ] Live URL for the API and the dashboard
-- [ ] Set `BEEHIVE_WEB_URL` to the live dashboard, or the agent's consent link points at localhost
-- [ ] Build the dashboard with `VITE_API_URL` set to the live API
+Decided 2026-11-06: one Lightsail box, Caddy in front, real Redo, free `sslip.io` hostname (buy a domain only if Muse rejects it).
+
+**Shape**
+
+```
+https://<ip-dashed>.sslip.io  (Caddy, auto HTTPS)
+  /api/*          → strip /api → Rust :3000   (dashboard, agent script)
+  /.well-known/*  → Rust :3000                (PAP discovery, for Muse and the SDK)
+  /poppy/*        → Rust :3000                (PAP session + returns at the root)
+  everything else → web/dist, SPA fallback    (dashboard, /consent/<id>)
+```
+
+- Same origin, so the dashboard keeps its default `/api` and needs no `VITE_API_URL`. CORS doesn't come into play.
+- The agent script uses `BEEHIVE_URL=https://<host>/api`. Discovery hands out relative paths, so they resolve under `/api`.
+- Caddy flushes `text/event-stream` on its own, so the live dashboard stream works through it.
+
+**Box:** Lightsail `nano_3_0` ($5/month: 0.5 GB, 2 vCPU, public IPv4), `ubuntu_24_04`, `us-west-2`, static IP (free while attached), ports 22/80/443. The binary and Caddy together use well under 100 MB.
+
+**Build:** local glibc is 2.43, Ubuntu 24.04 has 2.39, so a binary built on this machine won't run there. Build in Docker (`rust:1-bookworm`, glibc 2.36) with the cargo cache mounted. The dashboard is `pnpm build` as is.
+
+**Steps**
+
+- [ ] `scripts/deploy.sh <host>`: Docker release build, `pnpm build`, copy binary + `web/dist` + Caddyfile up, restart the service
+- [ ] Create the box (aws-mcp): instance, static IP, open 443, import the local SSH public key
+- [ ] Box setup, once: `apt install caddy`, `beehive` user, systemd unit (`Restart=always`, `EnvironmentFile=/etc/beehive.env`, chmod 600)
+- [ ] `/etc/beehive.env`: `REDO_MODE=real`, `REDO_STORE_ID`, `REDO_API_SECRET`, `REDO_BASE`, `BEEHIVE_JWT_SECRET` (fresh random), `BEEHIVE_WEB_URL=https://<host>`, `BEEHIVE_DEMO_SEED=1`, `PORT=3000`
+- [ ] HTTPS cert issues for `<host>` (Caddy falls back to ZeroSSL if Let's Encrypt refuses)
+- [ ] Smoke: `curl https://<host>/.well-known/poppy.json`, `curl https://<host>/api/health`, then `BEEHIVE_URL=https://<host>/api node agent/agent.ts --reset`, approve on the phone
 - [ ] Rerun `/wow` against the live URL, on the production build (only the dev server was tested)
+- [ ] Update AGENTS.md: Deploy and Live URL rows
 
-### 2. Harden (ranked by risk to the demo)
+**Known costs of real mode on a public URL**
+- Every restart re-seeds the Redo store and files the cold-open $36 into real Redo (`BEEHIVE_DEMO_SEED=1`). So does every "Reset demo".
+- If real Redo is down at startup, the server falls back to the mock with a warning. That's already built.
+- Fallback without a redeploy: set `REDO_MODE=mock` in `/etc/beehive.env`, then `systemctl restart beehive`.
 
-- [ ] **Shared state on the live URL** (about 30-45 min). "Reset demo" and "Edit one byte" are open to anyone. One click empties the wow for every viewer until a restart (`server/src/demo.rs:14`); a tamper leaves the proof broken for the next viewer. See question 1.
-- [ ] **Redo error mid-run** (about 20 min). If real Redo errors on the $36, the gate answers 502 (`server/src/gate.rs:130`), the agent's `call()` throws, and the $120 and replay blocks never run. Startup failure is already covered (mock fallback). Found by reading the code, not forced live. See question 2.
+**After judging:** delete the instance and release the static IP. An unattached static IP is billed.
+
+### 2. Harden
+
 - [ ] **Rehearse with `--reset` only** (no code). Without it the $36 blocks as "Order o_1 already has a return", then the rate limit blocks everything.
+- Code hardening (Redo errors, shared state on the live URL, retries) moved to `stretch-hardening.md` (S2).
 
 ### 3. Clean
 
@@ -55,13 +87,8 @@ Run with `/wow` on a cold mock instance, fresh Chromium profile, 375×667. Full 
 
 ## Questions to ask (at phase start, recommended first)
 
-1. **Shared state on the live URL:**
-   (a) Dashboard "Reset demo" re-seeds the cold-open state; agent `--reset` keeps emptying the shop, so its own $36 still passes. Any viewer can restore a tampered or emptied demo. *(recommended)*
-   (b) Hide "Reset demo" and "Edit one byte" unless the URL has `?demo=1`.
-   (c) Both.
-2. **Redo error mid-run:**
-   (a) The agent logs the error and keeps going, so the $120 and replay blocks still show. *(recommended, smallest)*
-   (b) The gate falls back to the mock for that one return.
+Questions 1 (shared state) and 2 (Redo error mid-run) moved to `stretch-hardening.md`.
+
 3. **Card order:**
    (a) Oldest first, so the story reads pass → cap block → duplicate. *(recommended)*
    (b) Keep newest first, pin the $120 block to the top.
