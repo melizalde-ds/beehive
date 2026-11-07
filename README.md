@@ -2,6 +2,9 @@
 
 **The Personal Agent Gate for Redo Merchants.**
 
+https://github.com/user-attachments/assets/189d6a7a-a5a9-4dd1-90c1-2d740ab8e4fb
+
+
 Beehive is a plugin for Redo that lets a customer's own AI agent file returns and claims through the Personal Agent Protocol (PAP). It checks who the agent is and what the customer allowed, then hands the work to Redo.
 
 **Live:** https://32-189-214-147.sslip.io
