@@ -55,9 +55,19 @@
 
 After two returns were imported successfully, it still returns `{"orders":[],"returns":[]}`. We can't tell if this is on purpose (imported returns filtered out) or a bug.
 
+## Finding 4: no way to mark a return as filed by the customer's agent
+**Source:** the OpenAPI spec (`docs/redo/openapi.yaml`), not a live call.
+
+The word "agent" appears nowhere in the spec. The return import body (`bulk-returns-request.schema`) has no field for who filed the return: not the agent, not the customer's consent, not a spending limit. A return's `source` holds only `emailAddress` and `name`, and return tags have `source` set to `merchant` or `redo` only. Free-text `notes` and `externalReferenceId` are the only places left to carry it.
+
+**Impact:** As customers' own agents start filing returns (PAP), shops and Redo's review can't tell those returns apart, filter them or weigh their risk differently.
+
+**Suggestion:** an optional `initiatedBy` on import and create (`customer` | `merchant` | `agent`, plus an agent id and a proof reference), shown on the return and usable in return rules.
+
 ## Questions for Redo
 1. Is the Bug 2 500 known? Would including `shippingAddress` or `merchantAddress` in the import avoid it?
 2. Should imported returns show up in `GET /stores/{storeId}/returns`?
 3. For a customer-initiated return, should we use **Create Return** instead of **Import Returns**? Does Create Return run Redo's review (risk level) and create a return label?
 4. Is there a way to link an imported return to a synced custom order? `externalReferenceId` doesn't seem to do that.
 5. What values do `reason` and `condition` accept?
+6. Is there, or is there planned, a way to mark a return as filed by the customer's agent, so review and return rules can treat it differently?

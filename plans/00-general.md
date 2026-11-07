@@ -20,6 +20,7 @@
 | 06 | Wire end to end: agent script → front door → gate → Redo mock → dashboard, live. **Checkpoint 8:30** | Yes (needs 02-05) | | 8:15-9:00 | All | `phase-06-wire.md` | |
 | 07 | Wow moment hardened: $120 block, replay block, verify + tamper. Seeded, working cold, repeatable reset, readable on a phone | Yes | | 9:00-10:00 | Technical, Overall | `phase-07-wow.md` | |
 | 08 | Last mile: README (identity, live link, demo steps, cites PAP, the Redo API, libraries, starter kit, links `docs/findings.md`), Utah styling polish, live URL (ask first), backup recording, audit, personas, rehearse 3x, submission fields. **Freeze 11:25** | Yes | | 10:00-11:25 | Overall | `phase-08-last-mile.md` | |
+| S1 | Stretch: validate discovery with a third-party PAP client (datalayer SDK), then try real Meta Muse. Timeboxed, **hard stop 10:30** | No (after 06) | 07 | 9:30-10:30 | Commerce, Overall | `stretch-muse.md` | Planned, open decisions 8-12 first |
 
 Real Redo keys work and the call order is tested (`docs/redo-integration.md`). Phase 03 builds both modes. Which mode the live demo runs is still open.
 
@@ -78,3 +79,8 @@ Not in the brief, so cut (no rubric line, not on the demo path):
 5. **`~/redo_smoke.sh`**: copy into the repo (for example `scripts/redo_smoke.sh`) after checking it has no hardcoded secret?
 6. **`dotenvy`** (new crate) so `cargo run` reads `.env` (rule RS-09), needed once real mode uses `REDO_API_SECRET`.
 7. **`*:Zone.Identifier`** in `.gitignore` (Windows download leftovers in `brief/` and `docs/`).
+8. **Discovery shape for S1** (schema change, ask first): the SDK targets PAP draft 0.3 (`protocol_version`, `organization`, `agent.protocols`, `auth.issuer`). Our `PoppyDiscovery` is our own `0.1-draft` shape (`pap_version`, `merchant`, `endpoints`), so the SDK check fails until the schema changes. Phase 04 is building against the current shape.
+9. **Deploy target** (ask first): S1 assumes AWS (Lightsail/EC2 + Caddy TLS) by 9:30. That moves the live URL out of phase 08 and overlaps phase 07 (wow hardening).
+10. **Python for S1**: the general plan says no Python. The SDK script is the one exception, outside the demo path.
+11. **Muse's `agent_id`** (seed change, ask first): the gate only knows `muse-demo`. Real Muse sends its own id and would be blocked by `agent_identity` until it's in the seed.
+12. **OAuth issuer metadata**: S1 needs a static `/.well-known/oauth-authorization-server`. The brief cuts real OAuth, so if Muse follows it to sign in, S1 stops (see `stretch-muse.md`).
