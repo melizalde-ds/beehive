@@ -29,6 +29,8 @@ pub struct AppState {
     keys: Arc<session::Keys>,
     redo: Arc<redo::Redo>,
     store: Arc<Mutex<Store>>,
+    /// Fires after every gate decision; `/returns/stream` forwards it to the dashboard.
+    returns_changed: tokio::sync::broadcast::Sender<()>,
 }
 
 impl AppState {
@@ -100,6 +102,7 @@ async fn main() -> anyhow::Result<()> {
         keys: Arc::new(keys),
         redo: Arc::new(redo),
         store: Arc::new(Mutex::new(store)),
+        returns_changed: tokio::sync::broadcast::channel(16).0,
     };
 
     let app = Router::new()
@@ -112,6 +115,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/poppy/returns", post(gate::file_return))
         .route("/gate/returns", post(gate::file_return))
         .route("/returns", get(gate::list_returns))
+        .route("/returns/stream", get(gate::stream_returns))
         .route("/evidence/{return_id}", get(evidence::get_evidence))
         .route("/evidence/{return_id}/tamper", post(evidence::tamper_link))
         .route("/verify/{return_id}", get(evidence::verify_chain))

@@ -1,14 +1,19 @@
 //! The gate: decides whether an agent may ask Redo for a return, in a fixed order of checks.
 //! The first failed check blocks. A block is still a 200 with a `GateResponse` body.
 
-use std::time::{Duration, Instant};
+use std::{
+    convert::Infallible,
+    time::{Duration, Instant},
+};
 
 use axum::{
     Json,
     extract::{State, rejection::JsonRejection},
     http::StatusCode,
+    response::sse::{self, KeepAlive, Sse},
 };
 use serde_json::json;
+use tokio_stream::{Stream, StreamExt, wrappers::BroadcastStream};
 
 use crate::{
     AppState, Attempt, Store,
@@ -29,7 +34,20 @@ pub async fn file_return(
     body: Result<Json<GateRequest>, JsonRejection>,
 ) -> Result<Json<GateResponse>, AppError> {
     let Json(req) = body?;
-    Ok(Json(run(&state, req).await?))
+    let response = run(&state, req).await?;
+    // Err only means no dashboard is listening.
+    let _ = state.returns_changed.send(());
+    Ok(Json(response))
+}
+
+/// SSE: one message per gate decision. The dashboard refetches `/returns` on each.
+pub async fn stream_returns(
+    State(state): State<AppState>,
+) -> Sse<impl Stream<Item = Result<sse::Event, Infallible>>> {
+    // A lagged receiver yields an Err; it still means "the list changed", so send it on too.
+    let changes = BroadcastStream::new(state.returns_changed.subscribe())
+        .map(|_| Ok(sse::Event::default().data("changed")));
+    Sse::new(changes).keep_alive(KeepAlive::default())
 }
 
 pub async fn list_returns(State(state): State<AppState>) -> Json<ReturnList> {
