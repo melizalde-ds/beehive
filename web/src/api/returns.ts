@@ -65,6 +65,20 @@ export function useVerify(returnId: string, enabled: boolean) {
   })
 }
 
+/** Rehearsal only: empties the shop. Return ids restart at bh_0001, so drop cached proofs too. */
+export function useResetDemo() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => postJson('/demo/reset', {}, ReturnListShape),
+    onSuccess: (list) => {
+      queryClient.removeQueries({ queryKey: ['evidence'] })
+      queryClient.removeQueries({ queryKey: ['verify'] })
+      queryClient.setQueryData(['returns'], list)
+    },
+    onError: (error) => console.error('Demo reset failed', error),
+  })
+}
+
 export function useTamper(returnId: string) {
   const queryClient = useQueryClient()
   return useMutation({

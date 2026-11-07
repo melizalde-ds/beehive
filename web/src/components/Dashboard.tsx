@@ -1,13 +1,15 @@
-import { CircleX } from 'lucide-react'
-import { useReturns } from '@/api/returns'
+import { CircleX, RotateCcw } from 'lucide-react'
+import { useResetDemo, useReturns } from '@/api/returns'
 import { useShop } from '@/api/shop'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { ReturnCard } from './ReturnCard'
 
 export function Dashboard() {
   const shop = useShop()
   const returns = useReturns()
+  const reset = useResetDemo()
 
   return (
     <main className="mx-auto max-w-2xl space-y-4 px-4 py-6">
@@ -17,10 +19,27 @@ export function Dashboard() {
         <p className="text-sm text-muted-foreground">
           Returns filed by customers' own AI agents. Beehive checks each one, Redo makes the call.
         </p>
-        <p className="flex items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
-          <span className={cn('size-2 rounded-full', returns.live ? 'bg-success' : 'bg-primary')} />
-          {returns.live ? 'Live' : 'Refreshing every 3 seconds'}
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="flex items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
+            <span className={cn('size-2 rounded-full', returns.live ? 'bg-success' : 'bg-primary')} />
+            {returns.live ? 'Live' : 'Refreshing every 3 seconds'}
+          </p>
+          <Button
+            variant="ghost"
+            size="xs"
+            className="text-muted-foreground"
+            disabled={reset.isPending}
+            onClick={() => reset.mutate()}
+          >
+            <RotateCcw />
+            {reset.isPending ? 'Resetting…' : 'Reset demo'}
+          </Button>
+        </div>
+        {reset.isError && (
+          <p className="text-xs text-destructive" role="alert">
+            Couldn't reset the demo. {reset.error.message}
+          </p>
+        )}
       </header>
 
       {returns.isPending && <p className="text-muted-foreground">Loading agent returns…</p>}

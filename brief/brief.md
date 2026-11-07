@@ -61,7 +61,7 @@ Response
 - **0:00-0:25** Opening line. Small Utah shops can't build for agents.
 - **0:25-1:45**
   1. Terminal: the personal agent reads `poppy.json`, starts a session, and the customer approves write access with a $50 refund cap.
-  2. The agent files "candle set arrived broken" ($36). The gate passes it, Redo approves it (LOW risk), and a label is issued. The dashboard updates live.
+  2. The agent files "candle set arrived broken" ($36). The gate passes it, Redo opens the return (approved). The dashboard updates live.
   3. WOW: the same agent tries the $120 crate. The gate blocks it: over the customer's $50 cap. Then it replays the first request: blocked as a duplicate, no double refund.
   4. Verify proof: green. Edit one byte: it breaks at that link.
 - **1:45-2:30** How: PAP front door, Rust gate, Redo does the returns, hash-chained evidence.

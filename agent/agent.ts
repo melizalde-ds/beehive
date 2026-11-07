@@ -1,6 +1,6 @@
 // The personal agent: Kaylee's agent finds the shop through PAP, asks for consent,
 // then files returns. It only asks; the Rust gate decides.
-// Run: node agent/agent.ts   (Node 24 runs TypeScript directly, no install)
+// Run: node agent/agent.ts [--reset]   (Node 24 runs TypeScript directly, no install)
 
 import type {
   GateRequest,
@@ -38,6 +38,11 @@ function show(label: string, r: GateResponse) {
 }
 
 async function main() {
+  if (process.argv.includes("--reset")) {
+    // Rehearsal only, not part of PAP: empties the shop's in-memory demo state.
+    await call("/demo/reset", {});
+    console.log("0. Reset the demo shop");
+  }
   console.log(`1. Discover ${BASE}/.well-known/poppy.json`);
   const shop = await call<PoppyDiscovery>("/.well-known/poppy.json");
   console.log(`  ${shop.merchant.name} speaks PAP ${shop.pap_version}, returns run by ${shop.merchant.platform}`);

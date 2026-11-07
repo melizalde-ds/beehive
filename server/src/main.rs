@@ -1,3 +1,4 @@
+mod demo;
 mod error;
 mod evidence;
 mod gate;
@@ -104,6 +105,13 @@ async fn main() -> anyhow::Result<()> {
         store: Arc::new(Mutex::new(store)),
         returns_changed: tokio::sync::broadcast::channel(16).0,
     };
+    if std::env::var("BEEHIVE_DEMO_SEED").is_ok_and(|v| v == "1") {
+        // A failed seed leaves an empty dashboard, not a dead server.
+        match demo::seed(&state).await {
+            Ok(()) => tracing::info!("demo seeded: $36 passed, $120 and replay blocked"),
+            Err(error) => tracing::warn!(%error, "demo seed failed; the dashboard starts empty"),
+        }
+    }
 
     let app = Router::new()
         .route("/health", get(|| async { "ok" }))
@@ -119,6 +127,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/evidence/{return_id}", get(evidence::get_evidence))
         .route("/evidence/{return_id}/tamper", post(evidence::tamper_link))
         .route("/verify/{return_id}", get(evidence::verify_chain))
+        .route("/demo/reset", post(demo::reset))
         .fallback(not_found)
         .layer(CorsLayer::permissive())
         .with_state(state);
