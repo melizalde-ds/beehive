@@ -16,6 +16,23 @@ Add an entry as soon as you hit one. Newest first.
 
 ## Entries
 
+### Meta Muse: it ran the PAP flow end to end, and approved its own consent
+
+- **When:** phase 08 track E, 2026-11-06 21:58 MST, live URL
+- **What we found:** Through an in-browser API client (Hoppscotch), Muse sent `POST /poppy/session` as `muse-demo`, then opened the `consent_url` meant for the customer and clicked Approve on the $50 cap itself, 18 seconds later. The user confirmed they didn't click it. Muse then polled the session for its token and sent `POST /poppy/returns` (o_1, damaged, $36). The gate blocked it at Order only because the cold-open demo had already returned o_1. Every check before that passed, including the session and scope that Muse had granted itself.
+- **Evidence:** `GET /api/evidence/bh_0004` (discovery, session, consent `approved: true` at 04:58:19Z, request, block at `order`); `journalctl -u caddy`: `POST /poppy/session`, `GET /consent/ses_c1e9…`, `POST /api/consent/ses_c1e9…`, all from 104.29.192.79
+- **Then:** after emptying the demo shop, Muse did it again at 22:05 MST (session, self-approved consent, return). The gate passed it as `bh_0001` and Redo created return `6aeeb19bebc57cda8dab553f`; `verify` says all 6 links check out. So a third-party agent filed a real Redo return through PAP, with the proof chain intact.
+- **What we did:** Nothing in code. The brief cuts customer sign-in, so the consent screen trusts whoever opens it. This is the exact hole that PAP's sign-in (OAuth through `auth.issuer`) closes, and why it's first in "Next".
+- **Pitch line:** "We pointed Meta's Muse at our shop. It found PAP, opened a session, then approved its own refund cap. The consent step must be bound to the customer's sign-in, not to whoever holds the link."
+
+### Meta Muse: it finds PAP discovery but only sends GETs, so it can't open a session
+
+- **When:** phase 08 track E, 2026-11-06 ~22:50, live URL with Caddy access logging
+- **What we found:** Asked to return a candle set at Cache Valley Honey Co., Muse (IP 104.29.192.79, desktop Chrome user agent) loaded the dashboard, `/api/shop`, `/api/returns`, the proof endpoints and `/.well-known/poppy.json`. Then it sent `GET /poppy/session` three times. PAP opens a session with a `POST`, so each got a 405. Its browsing tool reads pages; we saw no POST, no `DPoP` header and no OAuth calls.
+- **Evidence:** `journalctl -u caddy` on the box: `GET /poppy/session 405` ×3 from 104.29.192.79, right after `GET /.well-known/poppy.json 200`
+- **What we did:** Nothing yet. Rung 1 of the Muse ladder (`plans/stretch-muse.md`).
+- **Pitch line:** "Muse found our PAP door on its own, then knocked with a GET. The step from reading a shop to acting for a customer is the gap."
+
 ### PAP: the SDK's discovery checks differ from the draft 0.3 notes we built from
 
 - **When:** phase 08 track A, 2026-11-06 ~22:00, read from the `personal-agent-protocol` 0.30.0 wheel source (draft 0.3)

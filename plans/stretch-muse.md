@@ -9,6 +9,13 @@
 
 Meta confirmed Muse speaks PAP. The live URL is up (`https://32-189-214-147.sslip.io`, real Redo). Muse prep runs as track A and the Muse test as track E, in `phase-08-last-mile.md` under "Parallel tracks". The old 10:30 hard stop moves to **10:40**. After that, the time goes to the backup recording.
 
+**Rungs reached:**
+- 2026-11-06 ~22:30: rung 1. Muse loaded the dashboard, `/api/shop`, `/api/returns` and `/.well-known/poppy.json` (all 200) through a browser tool (IP 104.29.192.79, desktop Chrome UA), not a PAP client. It then suggested testing a PAP flow. Before that, an `ERR_CERT_COMMON_NAME_INVALID` came from somewhere other than our box (our TLS was valid; no mismatched cert is ever served).
+
+- 2026-11-06 21:58 MST: rungs 2 and 3. From the same IP, in a browser (Hoppscotch, per the user), Muse sent `POST /poppy/session` as `muse-demo` ($50, read+write), the consent screen was opened and approved, Muse polled the session for its token, then `POST /poppy/returns` (o_1, damaged, $36). The gate blocked it at Order (`bh_0004`): the cold-open `bh_0001` already returned o_1. Who clicked Approve (Muse or the user inside Muse's browser) is still to confirm.
+
+- 2026-11-06 22:05 MST: **top rung.** After `demo/reset?empty=1`, Muse opened a new session (after 3 `GET /poppy/session` 405s it switched to POST), approved consent from its browser again, and filed o_1 damaged $36. Gate **passed** `bh_0001`; real Redo return `6aeeb19bebc57cda8dab553f` (open); `GET /api/verify/bh_0001`: "All 6 links check out".
+
 **Muse ladder (each rung is a win; record it as soon as it's reached):**
 1. Muse reads `/.well-known/poppy.json`. Seen in the Caddy log.
 2. Muse opens a session, and Kaylee approves the $50 cap on the consent link.
