@@ -1,0 +1,1 @@
+{ "approve": true, "scopes": ["poppy:read", "poppy:write"], "refund_cap": 50.0 }

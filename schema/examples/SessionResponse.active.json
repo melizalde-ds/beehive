@@ -1,0 +1,10 @@
+{
+  "session_id": "ses_41d8",
+  "status": "active",
+  "consent_url": null,
+  "session_token": "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJ0b2tfOWYyYyIsInN1YiI6ImNfMSJ9.sig",
+  "token_id": "tok_9f2c",
+  "scopes": ["poppy:read", "poppy:write"],
+  "refund_cap": 50.0,
+  "expires_at": "2026-11-06T20:46:09-07:00"
+}

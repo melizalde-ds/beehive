@@ -1,0 +1,10 @@
+{
+  "session_id": "ses_41d8",
+  "status": "pending_consent",
+  "consent_url": "http://localhost:5173/consent/ses_41d8",
+  "session_token": null,
+  "token_id": null,
+  "scopes": ["poppy:read", "poppy:write"],
+  "refund_cap": 50.0,
+  "expires_at": null
+}

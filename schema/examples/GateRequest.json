@@ -1,0 +1,8 @@
+{
+  "request_id": "7c1e2a90-4b6f-4d1e-9a3b-2f8d5c0e6a11",
+  "session_token": "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJ0b2tfOWYyYyIsInN1YiI6ImNfMSJ9.sig",
+  "agent_id": "muse-demo",
+  "order_id": "o_1",
+  "reason": "damaged",
+  "amount": 36.0
+}

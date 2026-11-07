@@ -1,0 +1,44 @@
+{
+  "shop_id": "cache-valley-honey",
+  "returns": [
+    {
+      "return_id": "bh_0003", "at": "2026-11-06T20:32:40-07:00",
+      "agent_id": "muse-demo", "agent_name": "Muse",
+      "customer_id": "c_1", "customer_name": "Kaylee Jensen",
+      "order_id": "o_1", "product_name": "Beeswax Candle Set",
+      "amount": 36.0, "reason": "damaged",
+      "allowed_scopes": ["poppy:read", "poppy:write"], "refund_cap": 50.0,
+      "gate": "block", "blocked_by": "idempotency",
+      "gate_reason": "Duplicate of a request already filed as bh_0001. No second refund.",
+      "redo": null,
+      "chain_head": "1c3e5a7b9d0f2e4a6c8b1d3f5e7a9c0b2d4f6e8a4e7a1c9b3d5f7e0a2c4b6d8f"
+    },
+    {
+      "return_id": "bh_0002", "at": "2026-11-06T20:32:05-07:00",
+      "agent_id": "muse-demo", "agent_name": "Muse",
+      "customer_id": "c_1", "customer_name": "Kaylee Jensen",
+      "order_id": "o_2", "product_name": "Honeycomb Gift Crate",
+      "amount": 120.0, "reason": "changed_mind",
+      "allowed_scopes": ["poppy:read", "poppy:write"], "refund_cap": 50.0,
+      "gate": "block", "blocked_by": "refund_cap",
+      "gate_reason": "$120.00 is over the $50 cap the customer approved",
+      "redo": null,
+      "chain_head": "4e7a1c9b3d5f7e0a2c4b6d8f1e3a5c7b9d0f2e4a6c8b1d3f5e7a9c0b2d4f6e8a"
+    },
+    {
+      "return_id": "bh_0001", "at": "2026-11-06T20:31:16-07:00",
+      "agent_id": "muse-demo", "agent_name": "Muse",
+      "customer_id": "c_1", "customer_name": "Kaylee Jensen",
+      "order_id": "o_1", "product_name": "Beeswax Candle Set",
+      "amount": 36.0, "reason": "damaged",
+      "allowed_scopes": ["poppy:read", "poppy:write"], "refund_cap": 50.0,
+      "gate": "pass", "blocked_by": null,
+      "gate_reason": "Within $50 cap approved by customer",
+      "redo": {
+        "return_id": "mock_ret_123", "risk": "LOW", "status": "approved",
+        "label_url": "https://labels.redo.mock/st_cvh_demo/mock_ret_123.pdf"
+      },
+      "chain_head": "9b1f3c0d7a2e4f6b8c1d3e5f7a9b0c2d4e6f8a1b3c5d7e9f0a2b4c6d8e0f1a3b"
+    }
+  ]
+}

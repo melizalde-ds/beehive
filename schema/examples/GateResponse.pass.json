@@ -1,0 +1,13 @@
+{
+  "return_id": "bh_0001",
+  "gate": "pass",
+  "blocked_by": null,
+  "reason": "Within $50 cap approved by customer",
+  "redo": {
+    "return_id": "mock_ret_123",
+    "risk": "LOW",
+    "status": "approved",
+    "label_url": "https://labels.redo.mock/st_cvh_demo/mock_ret_123.pdf"
+  },
+  "chain_head": "9b1f3c0d7a2e4f6b8c1d3e5f7a9b0c2d4e6f8a1b3c5d7e9f0a2b4c6d8e0f1a3b"
+}

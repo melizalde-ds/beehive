@@ -1,0 +1,8 @@
+{
+  "pap_version": "0.1-draft",
+  "merchant": { "id": "cache-valley-honey", "name": "Cache Valley Honey Co.", "platform": "Redo" },
+  "endpoints": { "session": "/poppy/session", "returns": "/poppy/returns" },
+  "scopes_supported": ["poppy:read", "poppy:write"],
+  "session_modes": ["guest", "signed_in"],
+  "max_session_seconds": 900
+}

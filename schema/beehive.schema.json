@@ -1,0 +1,334 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://beehive.dev/schema/beehive.schema.json",
+  "title": "Beehive",
+  "description": "Every shape that crosses the Rust service and the TypeScript clients (dashboard and personal agent script). Change it only with an ask; then regenerate both sides.",
+  "definitions": {
+    "Reason": {
+      "description": "Why the customer wants the return or claim.",
+      "type": "string",
+      "enum": ["damaged", "wrong_item", "changed_mind", "forgot_cancel"]
+    },
+    "Scope": {
+      "type": "string",
+      "enum": ["poppy:read", "poppy:write"]
+    },
+    "GateRequest": {
+      "description": "POST /gate/returns and POST /poppy/returns. The agent asks; the gate decides whether it may ask.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["request_id", "session_token", "agent_id", "order_id", "reason", "amount"],
+      "properties": {
+        "request_id": { "description": "UUID chosen by the agent. Same id twice = duplicate.", "type": "string", "minLength": 1 },
+        "session_token": { "description": "JWT from POST /poppy/session.", "type": "string", "minLength": 1 },
+        "agent_id": { "type": "string", "minLength": 1 },
+        "order_id": { "type": "string", "minLength": 1 },
+        "reason": { "$ref": "#/definitions/Reason" },
+        "amount": { "description": "Refund asked for, in USD.", "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "GateDecision": {
+      "type": "string",
+      "enum": ["pass", "block"]
+    },
+    "GateCheck": {
+      "description": "The check that blocked the request. Null on pass.",
+      "type": "string",
+      "enum": ["session", "agent_identity", "scope", "refund_cap", "expiry", "replay", "idempotency", "rate_limit", "order"]
+    },
+    "RiskLevel": {
+      "type": "string",
+      "enum": ["LOW", "MEDIUM", "HIGH"]
+    },
+    "RedoStatus": {
+      "description": "LOW → approved, MEDIUM → manual_review, HIGH → denied.",
+      "type": "string",
+      "enum": ["approved", "manual_review", "denied"]
+    },
+    "RedoResult": {
+      "description": "What Redo returned for a return that passed the gate.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["return_id", "risk", "status", "label_url"],
+      "properties": {
+        "return_id": { "description": "Redo's id for the return.", "type": "string", "minLength": 1 },
+        "risk": { "$ref": "#/definitions/RiskLevel" },
+        "status": { "$ref": "#/definitions/RedoStatus" },
+        "label_url": { "description": "Return label. Only for approved returns.", "type": ["string", "null"] }
+      }
+    },
+    "GateResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["return_id", "gate", "blocked_by", "reason", "redo", "chain_head"],
+      "properties": {
+        "return_id": { "description": "Beehive's id for this attempt (pass or block). Key for /evidence and /verify.", "type": "string", "minLength": 1 },
+        "gate": { "$ref": "#/definitions/GateDecision" },
+        "blocked_by": { "oneOf": [{ "$ref": "#/definitions/GateCheck" }, { "type": "null" }] },
+        "reason": { "description": "Plain-English reason, shown to the agent and on the dashboard.", "type": "string" },
+        "redo": { "oneOf": [{ "$ref": "#/definitions/RedoResult" }, { "type": "null" }] },
+        "chain_head": { "description": "SHA-256 hex of the last evidence link.", "type": "string" }
+      }
+    },
+    "EvidenceStep": {
+      "type": "string",
+      "enum": ["discovery", "session", "consent", "request", "gate_decision", "redo_result"]
+    },
+    "EvidenceLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["index", "step", "at", "data", "prev_hash", "hash"],
+      "properties": {
+        "index": { "type": "integer", "minimum": 0 },
+        "step": { "$ref": "#/definitions/EvidenceStep" },
+        "at": { "description": "RFC 3339 timestamp.", "type": "string" },
+        "data": { "description": "What happened at this step.", "type": "object" },
+        "prev_hash": { "description": "Hash of the previous link. 64 zeros for the first.", "type": "string" },
+        "hash": { "description": "SHA-256 hex over prev_hash and this link's content.", "type": "string" }
+      }
+    },
+    "Evidence": {
+      "description": "GET /evidence/:return_id",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["return_id", "links", "chain_head"],
+      "properties": {
+        "return_id": { "type": "string" },
+        "links": { "type": "array", "items": { "$ref": "#/definitions/EvidenceLink" } },
+        "chain_head": { "type": "string" }
+      }
+    },
+    "VerifyResult": {
+      "description": "GET /verify/:return_id",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["return_id", "ok", "links_checked", "broken_at", "broken_step", "message"],
+      "properties": {
+        "return_id": { "type": "string" },
+        "ok": { "type": "boolean" },
+        "links_checked": { "type": "integer", "minimum": 0 },
+        "broken_at": { "description": "Index of the first broken link. Null when ok.", "type": ["integer", "null"], "minimum": 0 },
+        "broken_step": { "oneOf": [{ "$ref": "#/definitions/EvidenceStep" }, { "type": "null" }] },
+        "message": { "type": "string" }
+      }
+    },
+    "TamperRequest": {
+      "description": "POST /evidence/:return_id/tamper. Demo only: flips one byte in one stored link so verify can show the break.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["link_index"],
+      "properties": {
+        "link_index": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "PoppyDiscovery": {
+      "description": "GET /.well-known/poppy.json",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pap_version", "merchant", "endpoints", "scopes_supported", "session_modes", "max_session_seconds"],
+      "properties": {
+        "pap_version": { "type": "string" },
+        "merchant": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "name", "platform"],
+          "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "platform": { "description": "Who runs returns for this shop.", "type": "string" }
+          }
+        },
+        "endpoints": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["session", "returns"],
+          "properties": {
+            "session": { "type": "string" },
+            "returns": { "type": "string" }
+          }
+        },
+        "scopes_supported": { "type": "array", "items": { "$ref": "#/definitions/Scope" } },
+        "session_modes": { "type": "array", "items": { "$ref": "#/definitions/SessionMode" } },
+        "max_session_seconds": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "SessionMode": {
+      "type": "string",
+      "enum": ["guest", "signed_in"]
+    },
+    "SessionRequest": {
+      "description": "POST /poppy/session. The agent asks for scopes and a refund cap on the customer's behalf.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agent_id", "mode", "customer_email", "customer_id", "scopes", "refund_cap"],
+      "properties": {
+        "agent_id": { "type": "string", "minLength": 1 },
+        "mode": { "$ref": "#/definitions/SessionMode" },
+        "customer_email": { "type": "string", "minLength": 3 },
+        "customer_id": { "description": "Only when signed in.", "type": ["string", "null"] },
+        "scopes": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/Scope" } },
+        "refund_cap": { "description": "Most the agent may ask for per return, in USD.", "type": "number", "minimum": 0 }
+      }
+    },
+    "SessionStatus": {
+      "type": "string",
+      "enum": ["pending_consent", "active", "denied"]
+    },
+    "SessionResponse": {
+      "description": "POST /poppy/session and GET /poppy/session/:session_id. Token fields are null until the customer approves.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session_id", "status", "consent_url", "session_token", "token_id", "scopes", "refund_cap", "expires_at"],
+      "properties": {
+        "session_id": { "type": "string" },
+        "status": { "$ref": "#/definitions/SessionStatus" },
+        "consent_url": { "description": "Page where the customer approves. Null once decided.", "type": ["string", "null"] },
+        "session_token": { "type": ["string", "null"] },
+        "token_id": { "description": "Unique token id (JWT jti). Used for replay checks.", "type": ["string", "null"] },
+        "scopes": { "type": "array", "items": { "$ref": "#/definitions/Scope" } },
+        "refund_cap": { "type": "number", "minimum": 0 },
+        "expires_at": { "description": "RFC 3339. Null until active.", "type": ["string", "null"] }
+      }
+    },
+    "ConsentDecision": {
+      "description": "POST /consent/:session_id from the consent screen. The customer may lower the cap or drop write.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approve", "scopes", "refund_cap"],
+      "properties": {
+        "approve": { "type": "boolean" },
+        "scopes": { "type": "array", "items": { "$ref": "#/definitions/Scope" } },
+        "refund_cap": { "type": "number", "minimum": 0 }
+      }
+    },
+    "ReturnRecord": {
+      "description": "One agent-filed attempt, as the shop dashboard shows it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["return_id", "at", "agent_id", "agent_name", "customer_id", "customer_name", "order_id", "product_name", "amount", "reason", "allowed_scopes", "refund_cap", "gate", "blocked_by", "gate_reason", "redo", "chain_head"],
+      "properties": {
+        "return_id": { "type": "string" },
+        "at": { "description": "RFC 3339.", "type": "string" },
+        "agent_id": { "type": "string" },
+        "agent_name": { "type": "string" },
+        "customer_id": { "type": "string" },
+        "customer_name": { "type": "string" },
+        "order_id": { "type": "string" },
+        "product_name": { "type": "string" },
+        "amount": { "type": "number" },
+        "reason": { "$ref": "#/definitions/Reason" },
+        "allowed_scopes": { "type": "array", "items": { "$ref": "#/definitions/Scope" } },
+        "refund_cap": { "type": "number" },
+        "gate": { "$ref": "#/definitions/GateDecision" },
+        "blocked_by": { "oneOf": [{ "$ref": "#/definitions/GateCheck" }, { "type": "null" }] },
+        "gate_reason": { "type": "string" },
+        "redo": { "oneOf": [{ "$ref": "#/definitions/RedoResult" }, { "type": "null" }] },
+        "chain_head": { "type": "string" }
+      }
+    },
+    "ReturnList": {
+      "description": "GET /returns. Newest first.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shop_id", "returns"],
+      "properties": {
+        "shop_id": { "type": "string" },
+        "returns": { "type": "array", "items": { "$ref": "#/definitions/ReturnRecord" } }
+      }
+    },
+    "Billing": {
+      "type": "string",
+      "enum": ["one_time", "monthly"]
+    },
+    "Product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "price", "billing"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "description": "USD.", "type": "number", "minimum": 0 },
+        "billing": { "$ref": "#/definitions/Billing" }
+      }
+    },
+    "Customer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "email", "city"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "city": { "type": "string" }
+      }
+    },
+    "OrderItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["product_id", "qty", "unit_price"],
+      "properties": {
+        "product_id": { "type": "string" },
+        "qty": { "type": "integer", "minimum": 1 },
+        "unit_price": { "type": "number", "minimum": 0 }
+      }
+    },
+    "Order": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "customer_id", "placed_at", "delivered_at", "items", "total"],
+      "properties": {
+        "id": { "type": "string" },
+        "customer_id": { "type": "string" },
+        "placed_at": { "description": "RFC 3339.", "type": "string" },
+        "delivered_at": { "description": "RFC 3339. Null if not delivered yet.", "type": ["string", "null"] },
+        "items": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/OrderItem" } },
+        "total": { "type": "number", "minimum": 0 }
+      }
+    },
+    "Agent": {
+      "description": "A personal agent the gate recognizes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agent_id", "name", "operator"],
+      "properties": {
+        "agent_id": { "type": "string" },
+        "name": { "type": "string" },
+        "operator": { "description": "Who runs the agent.", "type": "string" }
+      }
+    },
+    "Shop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "location", "redo_store_id"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "location": { "type": "string" },
+        "redo_store_id": { "description": "storeId used in Redo API paths.", "type": "string" }
+      }
+    },
+    "Seed": {
+      "description": "GET /shop, and seed/cache-valley-honey.json.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shop", "products", "customers", "orders", "agents"],
+      "properties": {
+        "shop": { "$ref": "#/definitions/Shop" },
+        "products": { "type": "array", "items": { "$ref": "#/definitions/Product" } },
+        "customers": { "type": "array", "items": { "$ref": "#/definitions/Customer" } },
+        "orders": { "type": "array", "items": { "$ref": "#/definitions/Order" } },
+        "agents": { "type": "array", "items": { "$ref": "#/definitions/Agent" } }
+      }
+    },
+    "ApiError": {
+      "description": "Every non-2xx response body.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["error", "message"],
+      "properties": {
+        "error": { "description": "Short machine code, e.g. not_found.", "type": "string" },
+        "message": { "description": "Friendly sentence for the UI.", "type": "string" }
+      }
+    }
+  }
+}

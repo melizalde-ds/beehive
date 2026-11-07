@@ -1,0 +1,8 @@
+{
+  "return_id": "bh_0002",
+  "gate": "block",
+  "blocked_by": "refund_cap",
+  "reason": "$120.00 is over the $50 cap the customer approved",
+  "redo": null,
+  "chain_head": "4e7a1c9b3d5f7e0a2c4b6d8f1e3a5c7b9d0f2e4a6c8b1d3f5e7a9c0b2d4f6e8a"
+}

@@ -1,0 +1,48 @@
+{
+  "shop": {
+    "id": "cache-valley-honey",
+    "name": "Cache Valley Honey Co.",
+    "location": "Logan, Utah",
+    "redo_store_id": "st_cvh_demo"
+  },
+  "products": [
+    { "id": "p_subscription", "name": "Honey Subscription Box", "price": 28.0, "billing": "monthly" },
+    { "id": "p_wildflower", "name": "Raw Wildflower Honey", "price": 14.0, "billing": "one_time" },
+    { "id": "p_candles", "name": "Beeswax Candle Set", "price": 36.0, "billing": "one_time" },
+    { "id": "p_crate", "name": "Honeycomb Gift Crate", "price": 120.0, "billing": "one_time" }
+  ],
+  "customers": [
+    { "id": "c_1", "name": "Kaylee Jensen", "email": "kaylee.jensen@example.com", "city": "Logan, UT" },
+    { "id": "c_2", "name": "Tomás Ortega", "email": "tomas.ortega@example.com", "city": "Provo, UT" },
+    { "id": "c_3", "name": "Ruth Hales", "email": "ruth.hales@example.com", "city": "Brigham City, UT" }
+  ],
+  "orders": [
+    {
+      "id": "o_1", "customer_id": "c_1",
+      "placed_at": "2026-10-29T15:12:00-06:00", "delivered_at": "2026-11-03T11:40:00-07:00",
+      "items": [{ "product_id": "p_candles", "qty": 1, "unit_price": 36.0 }],
+      "total": 36.0
+    },
+    {
+      "id": "o_2", "customer_id": "c_1",
+      "placed_at": "2026-10-20T09:03:00-06:00", "delivered_at": "2026-10-24T14:22:00-06:00",
+      "items": [{ "product_id": "p_crate", "qty": 1, "unit_price": 120.0 }],
+      "total": 120.0
+    },
+    {
+      "id": "o_3", "customer_id": "c_2",
+      "placed_at": "2026-11-01T08:00:00-06:00", "delivered_at": "2026-11-04T16:05:00-07:00",
+      "items": [{ "product_id": "p_subscription", "qty": 1, "unit_price": 28.0 }],
+      "total": 28.0
+    },
+    {
+      "id": "o_4", "customer_id": "c_3",
+      "placed_at": "2026-10-27T19:47:00-06:00", "delivered_at": "2026-10-31T10:15:00-06:00",
+      "items": [{ "product_id": "p_wildflower", "qty": 2, "unit_price": 14.0 }],
+      "total": 28.0
+    }
+  ],
+  "agents": [
+    { "agent_id": "muse-demo", "name": "Muse", "operator": "Kaylee Jensen's personal agent (demo)" }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "return_id": "bh_0001",
+  "links": [
+    { "index": 0, "step": "discovery", "at": "2026-11-06T20:31:02-07:00",
+      "data": { "url": "/.well-known/poppy.json", "agent_id": "muse-demo" },
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "a3f1c2e4b6d8f0a1c3e5b7d9f1a2c4e6b8d0f2a4c6e8b0d2f4a6c8e0b2d4f6a8" },
+    { "index": 1, "step": "session", "at": "2026-11-06T20:31:03-07:00",
+      "data": { "session_id": "ses_41d8", "mode": "signed_in", "customer_id": "c_1", "requested_scopes": ["poppy:read", "poppy:write"], "requested_cap": 50.0 },
+      "prev_hash": "a3f1c2e4b6d8f0a1c3e5b7d9f1a2c4e6b8d0f2a4c6e8b0d2f4a6c8e0b2d4f6a8",
+      "hash": "b4e2d3f5c7e9a1b2d4f6c8e0a2b3d5f7c9e1a3b5d7f9c1e3a5b7d9f1c3e5a7b9" },
+    { "index": 2, "step": "consent", "at": "2026-11-06T20:31:09-07:00",
+      "data": { "approved": true, "scopes": ["poppy:read", "poppy:write"], "refund_cap": 50.0, "token_id": "tok_9f2c", "expires_at": "2026-11-06T20:46:09-07:00" },
+      "prev_hash": "b4e2d3f5c7e9a1b2d4f6c8e0a2b3d5f7c9e1a3b5d7f9c1e3a5b7d9f1c3e5a7b9",
+      "hash": "c5f3e4a6d8f0b2c3e5a7d9f1b3c4e6a8d0f2b4c6e8a0d2f4b6c8e0a2d4f6b8c0" },
+    { "index": 3, "step": "request", "at": "2026-11-06T20:31:15-07:00",
+      "data": { "request_id": "7c1e2a90-4b6f-4d1e-9a3b-2f8d5c0e6a11", "order_id": "o_1", "reason": "damaged", "amount": 36.0 },
+      "prev_hash": "c5f3e4a6d8f0b2c3e5a7d9f1b3c4e6a8d0f2b4c6e8a0d2f4b6c8e0a2d4f6b8c0",
+      "hash": "d6a4f5b7e9a1c3d4f6b8e0a2c4d5f7b9e1a3c5d7f9b1e3a5c7d9f1b3e5a7c9d1" },
+    { "index": 4, "step": "gate_decision", "at": "2026-11-06T20:31:15-07:00",
+      "data": { "gate": "pass", "reason": "Within $50 cap approved by customer" },
+      "prev_hash": "d6a4f5b7e9a1c3d4f6b8e0a2c4d5f7b9e1a3c5d7f9b1e3a5c7d9f1b3e5a7c9d1",
+      "hash": "e7b5a6c8f0b2d4e5a7c9f1b3d5e6a8c0f2b4d6e8a0c2f4b6d8e0a2c4f6b8d0e2" },
+    { "index": 5, "step": "redo_result", "at": "2026-11-06T20:31:16-07:00",
+      "data": { "return_id": "mock_ret_123", "risk": "LOW", "status": "approved" },
+      "prev_hash": "e7b5a6c8f0b2d4e5a7c9f1b3d5e6a8c0f2b4d6e8a0c2f4b6d8e0a2c4f6b8d0e2",
+      "hash": "9b1f3c0d7a2e4f6b8c1d3e5f7a9b0c2d4e6f8a1b3c5d7e9f0a2b4c6d8e0f1a3b" }
+  ],
+  "chain_head": "9b1f3c0d7a2e4f6b8c1d3e5f7a9b0c2d4e6f8a1b3c5d7e9f0a2b4c6d8e0f1a3b"
+}
