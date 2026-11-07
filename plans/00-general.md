@@ -19,7 +19,7 @@
 | 05 | Shop dashboard + consent screen (Vite): agent-filed returns, block reasons, Verify proof button, the $50-cap approval step (built against seed examples first) | No | 02, 03, 04 | 6:45-8:15 | Overall | `phase-05-dashboard.md` | Done (`04536f0`), incl. the SSE route `/returns/stream` |
 | 06 | Wire end to end: agent script → front door → gate → Redo mock → dashboard, live. **Checkpoint 8:30** | Yes (needs 02-05) | | 8:15-9:00 | All | `phase-06-wire.md` | Checkpoint met in phase 05's walk (mock, at 375 px). Real mode: the return shows in Redo's dashboard (2026-11-06), but as $0.00 store credit (see decision 15). Walked in real mode at 375 px on 2026-11-06 20:20 (agent script + Playwright consent): $36 passed, Redo return `6aee99198a41ad54330e8cfe` open; $120 and the replay blocked; `verify` 6/6. Done: the proof note in Redo's Activity feed carries the same gate hash (`7752d692…`) |
 | 07 | Wow moment hardened: $120 block, replay block, verify + tamper. Seeded, working cold, repeatable reset, readable on a phone | Yes | | 9:00-10:00 | Technical, Overall | `phase-07-wow.md` | Built, not committed: `POST /demo/reset` (agent `--reset` + dashboard button), `BEEHIVE_DEMO_SEED=1` cold open. Walked in real mode at 375 px |
-| 08 | Last mile: README (identity, live link, demo steps, cites PAP, the Redo API, libraries, starter kit, links `docs/findings.md`), Utah styling polish, live URL (ask first), backup recording, audit, personas, rehearse 3x, submission fields. **Freeze 11:25** | Yes | | 10:00-11:25 | Overall | `phase-08-last-mile.md` | |
+| 08 | Last mile: README (identity, live link, demo steps, cites PAP, the Redo API, libraries, starter kit, links `docs/findings.md`; tagline and the Hash-Chain Comb from the brand guide), Utah styling polish (brand guide picks below), live URL (ask first), backup recording, audit, personas, rehearse 3x, submission fields. **Freeze 11:25** | Yes | | 10:00-11:25 | Overall | `phase-08-last-mile.md` | |
 | S1 | Stretch: validate discovery with a third-party PAP client (datalayer SDK), then try real Meta Muse. Timeboxed, **hard stop 10:30** | No (after 06) | 07 | 9:30-10:30 | Commerce, Overall | `stretch-muse.md` | Planned, open decisions 8-12 first |
 
 Real Redo keys work and the call order is tested (`docs/redo-integration.md`). Phase 03 builds both modes. Which mode the live demo runs is still open.
@@ -105,5 +105,12 @@ Real Redo: `cd server && set -a; . ../.env; set +a; REDO_MODE=real cargo run` (s
 2. Phase 07 (wow hardening). The main gap: a rehearsal reset. Everything is in memory, the rate limit is 5 per minute per agent, and a second agent run blocks the $36 at `order` (already returned). Today the only reset is a server restart.
 3. Open decisions 1, 2, 13, 14, then 5, 7, 8-12 for the stretch.
 4. Phase 08 (README, deploy, polish). Polish notes: the gate decision link shows its `checks` array as raw JSON. In dev, Vite's proxy holds the `/returns/stream` headers until the first event, so the dashboard reads "Refreshing every 3 seconds" until something happens (direct to :3000 it's live at once).
+   **Brand (`docs/beehive_brand_architecture_guide.md`, suggestions only, about 20 min):**
+   - Use: the Hex-Key Gate SVG as `web/public/favicon.svg` (today it's Vite's default) and a small mark in the dashboard and consent headers.
+   - Use: the Hash-Chain Comb SVG (agent → gate → Redo) in the README and on the pitch slide, not on the dashboard.
+   - Use: the tagline "The Personal Agent Gate for Redo Merchants" as the README subtitle.
+   - Use: a system monospace font for agent ids, scopes, request ids and hashes (no new font dependency; JetBrains Mono would be ask-first).
+   - Skip: the dark slate palette. The cream and amber theme stays (the shop owner's view, checked at 375 px). Dark fits the terminal and the slide.
+   - Skip: the guide's demo flow (section 5). It's out of date: real Redo has no "LOW risk" or label, and tamper breaks link 3, the request, not consent.
 
 **Leftovers:** none. Worktrees, merged branches and the stale GitNexus index were cleaned up on 2026-11-06.
