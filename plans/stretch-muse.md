@@ -5,6 +5,22 @@
 **Never cut for this:** the dashboard slot, the $120 block, the replay block, verify + tamper.
 **Before starting:** open decisions 8-12 in `00-general.md`.
 
+## Update 2026-11-06 21:20: on, run as tracks A + E
+
+Meta confirmed Muse speaks PAP. The live URL is up (`https://32-189-214-147.sslip.io`, real Redo). Muse prep runs as track A and the Muse test as track E, in `phase-08-last-mile.md` under "Parallel tracks". The old 10:30 hard stop moves to **10:40**. After that, the time goes to the backup recording.
+
+**Muse ladder (each rung is a win; record it as soon as it's reached):**
+1. Muse reads `/.well-known/poppy.json`. Seen in the Caddy log.
+2. Muse opens a session, and Kaylee approves the $50 cap on the consent link.
+3. Muse files the $36 (Kaylee's prompt names order `o_1`, see D2). A "Muse" card shows on the dashboard and the return opens in Redo. Blocked at `agent_identity` until Muse's id is in the seed (D3). A block like that is still a usable rung: a real third-party agent stopped by the gate.
+
+**Gaps known before the test:**
+- No order lookup in our PAP: Muse can't find `o_1` by itself (D2).
+- The gate only knows `muse-demo` (D3).
+- The return fields and `reason` values must be in discovery, or Muse has to guess them (track A).
+
+On stage: Muse files the $36 (live or recorded), then `agent.ts --skip-candle` runs the $120 block and the replay (track B).
+
 ## Validate with a third-party PAP client (datalayer SDK)
 
 Goal: prove a client I didn't write can discover the shop. Run against the deployed HTTPS domain, not localhost (the SDK's URL safety policy may block local hosts).
