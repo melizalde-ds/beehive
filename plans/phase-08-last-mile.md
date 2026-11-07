@@ -20,7 +20,7 @@ Run with `/wow` on a cold mock instance, fresh Chromium profile, 375×667. Full 
 
 ## Checklist
 
-### 1. Deploy (about 45-60 min)
+### 1. Deploy (done 2026-11-06: https://32-189-214-147.sslip.io)
 
 Decided 2026-11-06: one Lightsail box, Caddy in front, real Redo, free `sslip.io` hostname (buy a domain only if Muse rejects it).
 
@@ -44,14 +44,14 @@ https://<ip-dashed>.sslip.io  (Caddy, auto HTTPS)
 
 **Steps**
 
-- [ ] `scripts/deploy.sh <host>`: Docker release build, `pnpm build`, copy binary + `web/dist` + Caddyfile up, restart the service
-- [ ] Create the box (aws-mcp): instance, static IP, open 443, import the local SSH public key
-- [ ] Box setup, once: `apt install caddy`, `beehive` user, systemd unit (`Restart=always`, `EnvironmentFile=/etc/beehive.env`, chmod 600)
-- [ ] `/etc/beehive.env`: `REDO_MODE=real`, `REDO_STORE_ID`, `REDO_API_SECRET`, `REDO_BASE`, `BEEHIVE_JWT_SECRET` (fresh random), `BEEHIVE_WEB_URL=https://<host>`, `BEEHIVE_DEMO_SEED=1`, `PORT=3000`
-- [ ] HTTPS cert issues for `<host>` (Caddy falls back to ZeroSSL if Let's Encrypt refuses)
-- [ ] Smoke: `curl https://<host>/.well-known/poppy.json`, `curl https://<host>/api/health`, then `BEEHIVE_URL=https://<host>/api node agent/agent.ts --reset`, approve on the phone
-- [ ] Rerun `/wow` against the live URL, on the production build (only the dev server was tested)
-- [ ] Update AGENTS.md: Deploy and Live URL rows
+- [x] `scripts/deploy.sh <host>`: Docker release build, `pnpm build`, copy binary + `web/dist` + Caddyfile up, restart the service
+- [x] Create the box (aws-mcp): instance, static IP, open 443, import the local SSH public key
+- [x] Box setup, once: `apt install caddy`, `beehive` user, systemd unit (`Restart=always`, `EnvironmentFile=/etc/beehive.env`, chmod 600)
+- [x] `/etc/beehive.env`: `REDO_MODE=real`, `REDO_STORE_ID`, `REDO_API_SECRET`, `REDO_BASE`, `BEEHIVE_JWT_SECRET` (fresh random), `BEEHIVE_WEB_URL=https://<host>`, `BEEHIVE_DEMO_SEED=1`, `PORT=3000`
+- [x] HTTPS cert issues for `<host>` (Caddy falls back to ZeroSSL if Let's Encrypt refuses)
+- [x] Smoke: `curl https://<host>/.well-known/poppy.json`, `curl https://<host>/api/health`, then `BEEHIVE_URL=https://<host>/api node agent/agent.ts --reset`, approve on the phone
+- [ ] Rerun `/wow` against the live URL (walked by hand on 2026-11-06 at 375 px: consent, $36 pass into real Redo, $120 + replay blocks, Live stream, verify 6/6, tamper breaks link 3; restart restores the cold open), on the production build (only the dev server was tested)
+- [x] Update AGENTS.md: Deploy and Live URL rows
 
 **Known costs of real mode on a public URL**
 - Every restart re-seeds the Redo store and files the cold-open $36 into real Redo (`BEEHIVE_DEMO_SEED=1`). So does every "Reset demo".

@@ -25,8 +25,8 @@ This is a hackathon build. `.claude/rules/hackathon.md` wins over any stricter r
 | Agent script (phase 04) | `BEEHIVE_URL=http://localhost:3000 node agent/agent.ts --reset`, then approve the consent link it prints (`--reset` empties the shop first) |
 | Cold-open demo (phase 07) | `BEEHIVE_DEMO_SEED=1 cargo run`: files the $36 pass, $120 block and replay block at startup. "Reset demo" on the dashboard empties it |
 | Real Redo (phase 03) | `cd server && set -a; . ../.env; set +a; REDO_MODE=real cargo run` (seeds the Redo store at startup; falls back to mock with a warn) |
-| Deploy | not decided (ask first) |
-| Live URL | none yet |
+| Deploy | `scripts/deploy.sh 32-189-214-147.sslip.io` (Docker build, then ships to the Lightsail box; settings in `/etc/beehive.env` on the box, made from `.env` on first deploy). Mock fallback: set `REDO_MODE=mock` there, `sudo systemctl restart beehive` |
+| Live URL | https://32-189-214-147.sslip.io (agent: `BEEHIVE_URL=https://32-189-214-147.sslip.io/api node agent/agent.ts --reset`) |
 
 ## Walk the demo
 
