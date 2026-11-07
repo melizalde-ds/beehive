@@ -1,5 +1,7 @@
 # BEEHIVE_HOST is filled in by scripts/deploy.sh (e.g. 44-1-2-3.sslip.io). Caddy gets the HTTPS cert itself.
 BEEHIVE_HOST {
+	# Access log to journald (journalctl -u caddy -f): shows every path Muse fetches.
+	log
 	# Dashboard and agent script: same origin, so the dashboard's default /api works with no build-time URL.
 	handle_path /api/* {
 		reverse_proxy 127.0.0.1:3000

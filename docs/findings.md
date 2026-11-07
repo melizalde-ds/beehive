@@ -16,6 +16,18 @@ Add an entry as soon as you hit one. Newest first.
 
 ## Entries
 
+### PAP: the SDK's discovery checks differ from the draft 0.3 notes we built from
+
+- **When:** phase 08 track A, 2026-11-06 ~22:00, read from the `personal-agent-protocol` 0.30.0 wheel source (draft 0.3)
+- **What we found:**
+  - The SDK finds the issuer through `GET /.well-known/oauth-protected-resource` (RFC 9728), not only `auth.issuer`. If `auth.issuer` is set and that URL is 404, discovery fails with `issuer_not_found`.
+  - The OAuth metadata must list `protected_resources` containing `https://{domain}` (`models.py`, `protected_resources: list[str] = Field(min_length=1)`). Our notes said `poppy_domains`.
+  - It also wants `token_endpoint`, `revocation_endpoint` and `grant_types_supported` including `refresh_token`. So a shop that only offers guest sessions has to advertise sign-in endpoints to pass, or leave `auth.issuer` out and look like it has no sign-in at all.
+  - `agent.protocols[].endpoint` must be an absolute HTTPS URL, while our own `endpoints` are relative.
+- **Evidence:** `personal_agent_protocol/models.py` (`protected_resources`, `REFRESH_TOKEN_GRANT`), `discovery.py`; branch `phase-08-a-muse`, `server/src/poppy.rs` (`protected_resource`, `oauth_metadata`)
+- **What we did:** Served all three `/.well-known` documents. Token and revoke URLs are placeholders (404), since the brief cuts real OAuth. Kept `poppy_domains` too.
+- **Pitch line:** "To pass PAP discovery a guest-only shop still has to publish OAuth token endpoints, so the spec could use a clear 'guest only' mode."
+
 ### Redo: an imported return is worth $0.00 and always store credit
 
 - **When:** phase 06, 2026-11-06, real-mode walk in Redo's dashboard
