@@ -3,19 +3,13 @@
 .env.local
 .env.*.local
 
-# Node / Next / Vite
+# Node / Vite
 node_modules/
-.next/
 dist/
 .vercel/
 
 # Rust
 target/
-
-# Python
-__pycache__/
-.venv/
-*.pyc
 
 # Claude Code
 .claude/settings.local.json
@@ -25,3 +19,6 @@ __pycache__/
 .DS_Store
 .idea/
 *.log
+
+# Serena (machine-local settings)
+.serena/project.local.yml
