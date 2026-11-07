@@ -68,6 +68,8 @@ pub struct Session {
     pub agent_id: String,
     pub status: SessionStatus,
     pub token_id: Option<String>,
+    /// The current token, so the agent can collect it by polling `GET /poppy/session/:id`.
+    pub token: Option<String>,
     pub scopes: Vec<Scope>,
     pub cap_cents: i64,
     pub expires_at: Option<DateTime<Utc>>,
@@ -83,6 +85,7 @@ impl Session {
             agent_id: agent_id.to_string(),
             status: SessionStatus::PendingConsent,
             token_id: None,
+            token: None,
             scopes,
             cap_cents,
             expires_at: None,
@@ -113,6 +116,7 @@ impl Session {
         let token = keys.issue(&claims)?;
         self.status = SessionStatus::Active;
         self.token_id = Some(claims.jti);
+        self.token = Some(token.clone());
         self.scopes = scopes;
         self.cap_cents = cap_cents;
         self.expires_at = Some(exp);

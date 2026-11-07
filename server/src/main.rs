@@ -1,6 +1,7 @@
 mod error;
 mod evidence;
 mod gate;
+mod poppy;
 mod redo;
 mod session;
 mod types;
@@ -104,6 +105,11 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/health", get(|| async { "ok" }))
         .route("/shop", get(shop))
+        .route("/.well-known/poppy.json", get(poppy::discovery))
+        .route("/poppy/session", post(poppy::create_session))
+        .route("/poppy/session/{session_id}", get(poppy::get_session))
+        .route("/consent/{session_id}", post(poppy::decide))
+        .route("/poppy/returns", post(gate::file_return))
         .route("/gate/returns", post(gate::file_return))
         .route("/returns", get(gate::list_returns))
         .route("/evidence/{return_id}", get(evidence::get_evidence))
