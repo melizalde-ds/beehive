@@ -12,7 +12,9 @@
 - [ ]
 - [ ]
 
-## Assumptions made
+## Questions asked
+
+<!-- Each unclear choice, the question you asked, and my answer. Never assume. -->
 
 -
 

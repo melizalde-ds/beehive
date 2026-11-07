@@ -16,15 +16,15 @@
 
 ## Assumptions made
 
-Confirmed by you after the phase: keep all contract additions (return_id, blocked_by, session/consent flow, GET /returns, tamper), and build the real consent screen (not pre-approved). The rest below are still open until you confirm them.
+Confirmed by you after the phase: `RedoResult` aligned with Redo's real API (Redo's return `status`, no risk score, label from `postageLabelUrl`; see `docs/redo/`). Keep all contract additions (return_id, blocked_by, session/consent flow, GET /returns, tamper), and build the real consent screen (not pre-approved). You also kept the remaining choices below.
 
 - One schema file (`beehive.schema.json`) with a `definitions` entry per shape, so typify and json2ts share types instead of duplicating them per file.
 - `GateResponse` gets a top-level `return_id` (Beehive's id for every attempt, pass or block) plus `blocked_by` (which check fired). The brief's shape had no id for blocked attempts, and the dashboard needs one for evidence and verify.
 - Added shapes the brief implies but didn't spell out: session request/response with a `pending_consent` → `active` flow, consent decision, the dashboard list (`GET /returns`), and a demo-only tamper endpoint. If the consent screen gets cut, the session can come back `active` right away with the same shape.
-- Money is a JSON number in USD. Phase 02 should compare in cents.
+- Money is a JSON number in USD. Phase 02 converts to integer cents before comparing (confirmed).
 - Example hashes are made up. Phase 02 sets the hashing rule.
 - The Redo API's own request/response shapes stay inside Rust (phase 03). Only the `redo` result crosses to TypeScript.
-- The dashboard calls `/api/*`. In dev, Vite proxies that to `localhost:3000`, so the consent page route `/consent/:id` can't collide with the API route. Prod sets `VITE_API_URL`. CORS for prod is open (tower-http is not in a rules file, so ask before adding it).
+- The dashboard calls `/api/*`. In dev, Vite proxies that to `localhost:3000`, so the consent page route `/consent/:id` can't collide with the API route. Prod sets `VITE_API_URL`. CORS: phase 02 adds tower-http (confirmed).
 - Tailwind, shadcn, zod and React Router are left to phase 05.
 - Customer emails use `example.com`.
 

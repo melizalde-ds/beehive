@@ -50,7 +50,8 @@ Claude loads these by file type. Other agents: read only the files for the area 
 - `[AGT-02]` Plan the phase as a short checklist in `plans/phase-##-name.md`, then build it.
 - `[AGT-03]` Use subagents only to run independent work in parallel. Don't use `superpowers:subagent-driven-development` or `superpowers:test-driven-development`.
 - `[AGT-04]` Use `superpowers:brainstorming` to scope, `superpowers:systematic-debugging` for bugs, `superpowers:verification-before-completion` before saying it works.
-- `[AGT-05]` When something is unclear, pick the reversible option, write the assumption at the top of your report, and keep going. Stop only if the choice changes the demo path or can't be undone.
+- `[AGT-05]` Never assume. When something is unclear, ask me before deciding (one batch of questions, recommended option first). If you can't ask live, stop and put the questions at the top of your report.
+- `[AGT-06]` Hit something a sponsor would want to hear (Redo or PAP gap, bug, surprising result)? Add an entry to `docs/findings.md` right away, using its template, and mention it in your report.
 
 ## Boundaries
 

@@ -14,12 +14,12 @@
 |---|-------|-----------|---------------|---------------|-------------|-----------|--------|
 | 01 | Contract + seed data: lock the gate, evidence and verify shapes, seed the shop, products, 3 customers and orders, set up empty runnable Vite and Axum apps, ask the Redo table for sandbox keys | Yes | | 6:15-6:45 | All | `phase-01-contract.md` | |
 | 02 | Rust gate: every agent check, the hash chain, `verify`, unit tests per check | No | 03, 04, 05 | 6:45-7:45 | Technical | `phase-02-gate.md` | |
-| 03 | Redo mock behind the `RedoClient` trait: order sync, return + risk review, return label | No | 02, 04, 05 | 6:45-7:30 | Commerce | `phase-03-redo-mock.md` | |
+| 03 | Redo mock behind the `RedoClient` trait, matching `docs/redo/openapi.yaml`: custom order sync, return create (with `Idempotency-Key`), Redo's return status, label URL | No | 02, 04, 05 | 6:45-7:30 | Commerce | `phase-03-redo-mock.md` | |
 | 04 | PAP front door (Rust) + agent script: `poppy.json`, session, returns endpoint, the terminal agent. Separate module from 02 and 03 so the parallel work does not collide | No | 02, 03, 05 | 6:45-8:00 | Commerce | `phase-04-front-door.md` | |
 | 05 | Shop dashboard + consent screen (Vite): agent-filed returns, block reasons, Verify proof button, the $50-cap approval step (built against seed examples first) | No | 02, 03, 04 | 6:45-8:15 | Overall | `phase-05-dashboard.md` | |
 | 06 | Wire end to end: agent script → front door → gate → Redo mock → dashboard, live. **Checkpoint 8:30** | Yes (needs 02-05) | | 8:15-9:00 | All | `phase-06-wire.md` | |
 | 07 | Wow moment hardened: $120 block, replay block, verify + tamper. Seeded, working cold, repeatable reset, readable on a phone | Yes | | 9:00-10:00 | Technical, Overall | `phase-07-wow.md` | |
-| 08 | Last mile: README (identity, live link, demo steps, cites PAP, the Redo API, libraries, starter kit), Utah styling polish, live URL (ask first), backup recording, audit, personas, rehearse 3x, submission fields. **Freeze 11:25** | Yes | | 10:00-11:25 | Overall | `phase-08-last-mile.md` | |
+| 08 | Last mile: README (identity, live link, demo steps, cites PAP, the Redo API, libraries, starter kit, links `docs/findings.md`), Utah styling polish, live URL (ask first), backup recording, audit, personas, rehearse 3x, submission fields. **Freeze 11:25** | Yes | | 10:00-11:25 | Overall | `phase-08-last-mile.md` | |
 
 Optional, only if Redo gave keys **and** 07 is green: swap in the real Redo sandbox behind `RedoClient` (10:00-10:30, taken from 08).
 
