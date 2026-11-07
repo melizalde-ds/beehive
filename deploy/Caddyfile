@@ -1,0 +1,21 @@
+# BEEHIVE_HOST is filled in by scripts/deploy.sh (e.g. 44-1-2-3.sslip.io). Caddy gets the HTTPS cert itself.
+BEEHIVE_HOST {
+	# Dashboard and agent script: same origin, so the dashboard's default /api works with no build-time URL.
+	handle_path /api/* {
+		reverse_proxy 127.0.0.1:3000
+	}
+	# PAP at the domain root, where Muse and the SDK look for it.
+	handle /.well-known/* {
+		reverse_proxy 127.0.0.1:3000
+	}
+	handle /poppy/* {
+		reverse_proxy 127.0.0.1:3000
+	}
+	# Dashboard and consent screen (/consent/<id>), single-page app.
+	handle {
+		root * /srv/beehive/web
+		encode gzip
+		try_files {path} /index.html
+		file_server
+	}
+}

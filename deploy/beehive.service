@@ -1,0 +1,14 @@
+[Unit]
+Description=Beehive (PAP front door, gate, Redo handoff)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=beehive
+EnvironmentFile=/etc/beehive.env
+ExecStart=/srv/beehive/beehive
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
