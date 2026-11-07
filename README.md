@@ -28,9 +28,9 @@ The live demo shares one in-memory state, so you may see another visitor's run. 
 
 ## Tested with Meta's Muse
 
-On 2026-11-06 we pointed Meta's Muse at the live shop and asked it to return a broken candle set. With no help from us, it found `/.well-known/poppy.json`, opened a PAP session, and filed the $36 return. The gate passed it, Redo opened a real return, and the proof checks out (all 6 links).
+On 2026-11-06 I pointed Meta's Muse at the live shop and asked it to return a broken candle set. With no help from me, it found `/.well-known/poppy.json`, opened a PAP session, and filed the $36 return. The gate passed it, Redo opened a real return, and the proof checks out (all 6 links).
 
-It also showed us a gap. Muse opened the consent link meant for the customer and approved its own $50 cap. The brief left out customer sign-in, so the consent screen trusts whoever opens it. Binding consent to the customer's sign-in (PAP's OAuth issuer) is the first thing next. Details in [`docs/findings.md`](docs/findings.md).
+It also showed me a gap. Muse opened the consent link meant for the customer and approved its own $50 cap. The brief left out customer sign-in, so the consent screen trusts whoever opens it. Binding consent to the customer's sign-in (PAP's OAuth issuer) is the first thing next. Details in [`docs/findings.md`](docs/findings.md).
 
 ## How it works
 
@@ -73,14 +73,14 @@ BEEHIVE_URL=http://localhost:3000 node agent/agent.ts --reset   # then approve t
 | Contract check | `cd server && cargo test` |
 | Build | `cd server && cargo build --release` · `cd web && pnpm build` |
 
-## What we found for sponsors
+## What I found for sponsors
 
-[`docs/findings.md`](docs/findings.md): what building on Redo's API taught us, with evidence. The short version: Redo's idempotency held up, a return can't say that an agent filed it, and an imported return shows as $0.00 store credit. Bug reports with steps are in [`docs/redo-findings.md`](docs/redo-findings.md).
+[`docs/findings.md`](docs/findings.md): what building on Redo's API taught me, with evidence. The short version: Redo's idempotency held up, a return can't say that an agent filed it, and an imported return shows as $0.00 store credit. Bug reports with steps are in [`docs/redo-findings.md`](docs/redo-findings.md).
 
 ## Credits
 
 - **PAP (Personal Agent Protocol, "Poppy"):** [Sierra's announcement](https://sierra.ai/blog/poppy), with [Descope's explainer](https://www.descope.com/learn/post/personal-agent-protocol). PAP is a draft. Beehive builds a subset: discovery, sessions with consent, and filing returns.
-- **Redo API:** [docs for agents (`llms.txt`)](https://developers.redo.com/llms.txt) and the [OpenAPI spec](https://developers.redo.com/api-schema/openapi.yaml). How the real API behaved in our tests: [`docs/redo-integration.md`](docs/redo-integration.md).
+- **Redo API:** [docs for agents (`llms.txt`)](https://developers.redo.com/llms.txt) and the [OpenAPI spec](https://developers.redo.com/api-schema/openapi.yaml). How the real API behaved in my tests: [`docs/redo-integration.md`](docs/redo-integration.md).
 - **Server:** [Axum](https://github.com/tokio-rs/axum), [Tokio](https://tokio.rs), [jsonwebtoken](https://github.com/Keats/jsonwebtoken), [sha2](https://github.com/RustCrypto/hashes), [reqwest](https://github.com/seanmonstar/reqwest), [serde](https://serde.rs), [typify](https://github.com/oxidecomputer/typify), tower-http, tracing, chrono, uuid.
 - **Dashboard:** [React](https://react.dev), [Vite](https://vite.dev), [TanStack Query](https://tanstack.com/query), [Tailwind CSS](https://tailwindcss.com), [shadcn/ui](https://ui.shadcn.com) on [Radix](https://www.radix-ui.com), [zod](https://zod.dev), [Lucide](https://lucide.dev), [Geist](https://vercel.com/font), [json-schema-to-typescript](https://github.com/bcherny/json-schema-to-typescript).
 - **One contract:** `schema/beehive.schema.json` generates both the Rust types (typify) and the TypeScript types.
