@@ -16,9 +16,17 @@ Add an entry as soon as you hit one. Newest first.
 
 ## Entries
 
+### Redo: an imported return is worth $0.00 and always store credit
+
+- **When:** phase 06, 2026-11-06, real-mode walk in Redo's dashboard
+- **What we found:** Every return imported through `POST /stores/{storeId}/returns/bulk` shows "Retail price $0.00, Return value $0.00, Store credit", even when the order was synced first with the $36.00 line price (the smoke test does this). The import body has no field for a price, a refund type (refund vs store credit) or the Redo order it belongs to. `externalReferenceId` is documented as the merchant's own RMA id, not an order link. So Redo doesn't link the return to the synced order: it also shows "No address on original order". The `notes` do show up, as a message in the return's Activity feed, but the feed attributes it to "Redo".
+- **Evidence:** `docs/redo/openapi.yaml`, `bulk-returns-request.schema` (product fields: `productId`, `quantity`, `sku`, `barcode`, `productTitle`, `variantTitle`, `reason`, `condition`). The 3 "Ana Test" returns from `~/redo_smoke.sh` in the Crimson Hack store: $0.00, store credit, note "Filed by Beehive smoke test" in Activity.
+- **What we did:** Nothing in code yet. Beehive's dashboard shows the $36 amount from its own record.
+- **Pitch line:** "An agent can file a return through Redo's API, but the API can't say what it's worth or how it should be refunded, so the shop sees $0 store credit."
+
 ### Redo: a return can't say that a customer's agent filed it
 
-- **When:** phase 02, while building the gate's handoff to Redo (read from the spec, not tested live yet)
+- **When:** phase 02, while building the gate's handoff to Redo (read from the spec). Tested live in phase 06 (2026-11-06): the note shows in the return's Activity feed with the same gate hash that `GET /verify/bh_0001` checks (Redo return `6aee99198a41ad54330e8cfe`).
 - **What we found:** The word "agent" appears nowhere in Redo's OpenAPI spec. The return import body (`bulk-returns-request.schema`) has `customer`, `notes`, `externalReferenceId` and `idempotencyKey`, but no field for who filed the return, which agent it was, or what the customer allowed. On a return, `source` holds only the customer's email and name, and return tags come only from `merchant` or `redo`. So once agent-filed returns reach Redo, the shop can't tell them apart from ones the customer filed, and Redo's review can't weigh them differently.
 - **Evidence:** `docs/redo/openapi.yaml`: `bulk-returns-request.schema`, the return `source` object, the return tag `source` enum (`merchant`, `redo`)
 - **What we did:** Every return Beehive imports carries the proof in Redo's free-text `notes`: "Filed by agent muse-demo for Kaylee Jensen through Beehive bh_0001, within a $50.00 cap the customer approved. Proof: gate decision hash a7e3…21aa". The hash matches the gate decision link that `GET /verify/bh_0001` checks. `externalReferenceId` stays the order id (`cvh-o-1`). Beehive's dashboard and `verify` hold the full record.

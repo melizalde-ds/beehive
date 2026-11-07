@@ -14,10 +14,10 @@
 |---|-------|-----------|---------------|---------------|-------------|-----------|--------|
 | 01 | Contract + seed data: lock the gate, evidence and verify shapes, seed the shop, products, 3 customers and orders, set up empty runnable Vite and Axum apps, ask the Redo table for sandbox keys | Yes | | 6:15-6:45 | All | `phase-01-contract.md` | Done (`cb3ab83`, `a8696e9`) |
 | 02 | Rust gate: every agent check, the hash chain, `verify`, tamper, dashboard list, dev session (no unit tests, by choice) | No | 03, 04, 05 | 6:45-7:45 | Technical | `phase-02-gate.md` | Done (`1ca93cc`) |
-| 03 | Redo client, built to the behavior in `docs/redo-integration.md`: a mock shaped like `redo-fixtures/` and a real HTTP client, switched by `REDO_MODE`. A seed command (product upload, then order sync). Return import with `idempotencyKey` = `request_id`, then a status read, then a best-effort label | No | 02, 04, 05 | 6:45-7:30 | Commerce | `phase-03-redo.md` | Done (`4a48e76`). Proof-in-`notes` follow-up on `phase-03-redo-proof`, mock-walked, not committed |
+| 03 | Redo client, built to the behavior in `docs/redo-integration.md`: a mock shaped like `redo-fixtures/` and a real HTTP client, switched by `REDO_MODE`. A seed command (product upload, then order sync). Return import with `idempotencyKey` = `request_id`, then a status read, then a best-effort label | No | 02, 04, 05 | 6:45-7:30 | Commerce | `phase-03-redo.md` | Done (`4a48e76`), proof in Redo's `notes` (`05df15d`) |
 | 04 | PAP front door (Rust) + agent script: `poppy.json`, session, returns endpoint, the terminal agent. Separate module from 02 and 03 so the parallel work does not collide | No | 02, 03, 05 | 6:45-8:00 | Commerce | `phase-04-front-door.md` | Done (`3f1fad6`) |
 | 05 | Shop dashboard + consent screen (Vite): agent-filed returns, block reasons, Verify proof button, the $50-cap approval step (built against seed examples first) | No | 02, 03, 04 | 6:45-8:15 | Overall | `phase-05-dashboard.md` | Done (`04536f0`), incl. the SSE route `/returns/stream` |
-| 06 | Wire end to end: agent script → front door → gate → Redo mock → dashboard, live. **Checkpoint 8:30** | Yes (needs 02-05) | | 8:15-9:00 | All | `phase-06-wire.md` | Checkpoint met in phase 05's walk (mock, at 375 px). Left: walk it with `REDO_MODE=real` |
+| 06 | Wire end to end: agent script → front door → gate → Redo mock → dashboard, live. **Checkpoint 8:30** | Yes (needs 02-05) | | 8:15-9:00 | All | `phase-06-wire.md` | Checkpoint met in phase 05's walk (mock, at 375 px). Real mode: the return shows in Redo's dashboard (2026-11-06), but as $0.00 store credit (see decision 15). Walked in real mode at 375 px on 2026-11-06 20:20 (agent script + Playwright consent): $36 passed, Redo return `6aee99198a41ad54330e8cfe` open; $120 and the replay blocked; `verify` 6/6. Done: the proof note in Redo's Activity feed carries the same gate hash (`7752d692…`) |
 | 07 | Wow moment hardened: $120 block, replay block, verify + tamper. Seeded, working cold, repeatable reset, readable on a phone | Yes | | 9:00-10:00 | Technical, Overall | `phase-07-wow.md` | |
 | 08 | Last mile: README (identity, live link, demo steps, cites PAP, the Redo API, libraries, starter kit, links `docs/findings.md`), Utah styling polish, live URL (ask first), backup recording, audit, personas, rehearse 3x, submission fields. **Freeze 11:25** | Yes | | 10:00-11:25 | Overall | `phase-08-last-mile.md` | |
 | S1 | Stretch: validate discovery with a third-party PAP client (datalayer SDK), then try real Meta Muse. Timeboxed, **hard stop 10:30** | No (after 06) | 07 | 9:30-10:30 | Commerce, Overall | `stretch-muse.md` | Planned, open decisions 8-12 first |
@@ -78,7 +78,7 @@ Not in the brief, so cut (no rubric line, not on the demo path):
 4. ~~`reqwest`~~. Answered: added in phase 03.
 5. **`~/redo_smoke.sh`**: copy into the repo (for example `scripts/redo_smoke.sh`) after checking it has no hardcoded secret?
 6. ~~`dotenvy`~~. Answered: no. Export the vars in the shell (`set -a; . ../.env; set +a`).
-7. **`*:Zone.Identifier`** in `.gitignore` (Windows download leftovers in `brief/` and `docs/`).
+7. ~~`*:Zone.Identifier`~~. Moot: no such files are left.
 8. **Discovery shape for S1** (schema change, ask first): the SDK targets PAP draft 0.3 (`protocol_version`, `organization`, `agent.protocols`, `auth.issuer`). Our `PoppyDiscovery` is our own `0.1-draft` shape (`pap_version`, `merchant`, `endpoints`), so the SDK check fails until the schema changes. Phase 04 is building against the current shape.
 9. **Deploy target** (ask first): S1 assumes AWS (Lightsail/EC2 + Caddy TLS) by 9:30. That moves the live URL out of phase 08 and overlaps phase 07 (wow hardening).
 10. **Python for S1**: the general plan says no Python. The SDK script is the one exception, outside the demo path.
@@ -86,6 +86,7 @@ Not in the brief, so cut (no rubric line, not on the demo path):
 12. **OAuth issuer metadata**: S1 needs a static `/.well-known/oauth-authorization-server`. The brief cuts real OAuth, so if Muse follows it to sign in, S1 stops (see `stretch-muse.md`).
 13. **Unit tests per gate check** (phase 07): the brief asks for them and "Cut on purpose" keeps them, but phase 02 skipped them by choice. Today there are 3 tests (contract + Redo fixture parser), none per check.
 14. **Agent name on the consent screen** (schema change, ask first): `SessionResponse` has no `agent_id`, so the screen says "Your AI agent" instead of "Muse".
+15. **$0.00 store credit in real Redo**: the return import (`server/src/redo.rs`, `import_return`) sends no price or refund type per product, so Redo shows the $36 candle return as "$0.00, Store credit". Checked: the import has no field for either, nor an order link (logged in `docs/findings.md`). Options: live with it and say so in the pitch, or try sending `shippingAddress` (untested, would only fix "No address"). The Redo store also has 3 "Ana Test" returns from the smoke runs, which judges would see if they open it.
 
 ## Next session (handoff, 2026-11-06 evening)
 
@@ -100,11 +101,9 @@ BEEHIVE_URL=http://localhost:3000 node agent/agent.ts   # prints the consent lin
 Real Redo: `cd server && set -a; . ../.env; set +a; REDO_MODE=real cargo run` (seeds the store at startup, about 3.5 s).
 
 **Next up, in order:**
-1. Commit `phase-03-redo-proof`, then walk it in real mode (open the return in Redo's dashboard, check the note).
+1. ~~Commit `phase-03-redo-proof`~~ (`05df15d`). Real-mode walk done, proof note verified in Redo. Left: decision 15 ($0.00 store credit).
 2. Phase 07 (wow hardening). The main gap: a rehearsal reset. Everything is in memory, the rate limit is 5 per minute per agent, and a second agent run blocks the $36 at `order` (already returned). Today the only reset is a server restart.
 3. Open decisions 1, 2, 13, 14, then 5, 7, 8-12 for the stretch.
 4. Phase 08 (README, deploy, polish). Polish note from phase 05: the gate decision link shows its `checks` array as raw JSON.
 
-**Leftovers to clean up:**
-- Worktrees `../crimson-hacks-project-phase-04` and `../crimson-hacks-project-phase-05` are merged. Remove them with `git worktree remove <path>` (stop the servers phase 05 left on :3005 and :5175 first).
-- The GitNexus index is behind `main`. Run `node .gitnexus/run.cjs analyze --index-only`. Phase 04 also registered a second index under the same name for its worktree.
+**Leftovers:** none. Worktrees, merged branches and the stale GitNexus index were cleaned up on 2026-11-06.
