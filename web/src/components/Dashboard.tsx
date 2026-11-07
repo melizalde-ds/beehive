@@ -14,7 +14,10 @@ export function Dashboard() {
   return (
     <main className="mx-auto max-w-2xl space-y-4 px-4 py-6">
       <header className="space-y-1">
-        <p className="text-sm font-medium text-muted-foreground">Beehive · shop dashboard</p>
+        <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <img src="/favicon.svg" alt="" className="size-6" />
+          Beehive · shop dashboard
+        </p>
         <h1 className="text-2xl font-semibold">{shop.data?.shop.name ?? 'Cache Valley Honey Co.'}</h1>
         <p className="text-sm text-muted-foreground">
           Returns filed by customers' own AI agents. Beehive checks each one, Redo makes the call.
@@ -60,7 +63,11 @@ export function Dashboard() {
         </div>
       )}
 
-      {returns.data?.returns.map((record) => <ReturnCard key={record.return_id} record={record} />)}
+      {/* The API lists newest first; oldest first reads as the story: pass, cap block, duplicate. */}
+      {returns.data?.returns
+        .slice()
+        .reverse()
+        .map((record) => <ReturnCard key={record.return_id} record={record} />)}
     </main>
   )
 }

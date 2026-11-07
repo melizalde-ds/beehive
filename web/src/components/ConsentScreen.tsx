@@ -17,6 +17,10 @@ export function ConsentScreen({ sessionId }: { sessionId: string }) {
 
   return (
     <main className="mx-auto max-w-md px-4 py-8">
+      <p className="mb-4 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+        <img src="/favicon.svg" alt="" className="size-6" />
+        Beehive
+      </p>
       {session.isPending && <p className="text-muted-foreground">Loading the request…</p>}
       {session.isError && (
         <Alert variant="destructive">

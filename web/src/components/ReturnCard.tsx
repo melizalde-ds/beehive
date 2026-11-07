@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { checkLabel, reasonLabel, redoLabel, time, usd } from '@/lib/labels'
+import { checkLabel, reasonLabel, redoLabel, scopeLabel, time, usd } from '@/lib/labels'
 import type { ReturnRecord } from '@/types/generated/beehive'
 import { ProofPanel } from './ProofPanel'
 
@@ -26,7 +26,7 @@ export function ReturnCard({ record }: { record: ReturnRecord }) {
         </div>
         <CardDescription>
           {record.agent_name} for {record.customer_name} · {reasonLabel[record.reason]} ·{' '}
-          {time(record.at)} · {record.return_id}
+          {time(record.at)} · <span className="font-mono text-xs">{record.return_id}</span>
         </CardDescription>
       </CardHeader>
 
@@ -35,8 +35,10 @@ export function ReturnCard({ record }: { record: ReturnRecord }) {
         <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
           <dt className="text-muted-foreground">Allowed</dt>
           <dd>
-            {record.allowed_scopes.length ? record.allowed_scopes.join(', ') : 'nothing'} · cap{' '}
-            {usd.format(record.refund_cap)}
+            {record.allowed_scopes.length
+              ? record.allowed_scopes.map((scope) => scopeLabel[scope]).join(', ')
+              : 'nothing'}{' '}
+            · refunds up to {usd.format(record.refund_cap)}
           </dd>
           <dt className="text-muted-foreground">Redo</dt>
           <dd>
