@@ -205,19 +205,6 @@ fn check(store: &mut Store, seed: &Seed, keys: &Keys, req: &GateRequest) -> Verd
     }
     let agent = req.agent_id.as_str();
 
-    // Only requests that get past this check count toward the limit.
-    let now = Instant::now();
-    let hits = store.agent_hits.entry(agent.to_string()).or_default();
-    hits.retain(|t| now.duration_since(*t) < RATE_WINDOW);
-    if hits.len() >= RATE_LIMIT {
-        block!(
-            GateCheck::RateLimit,
-            "{agent} sent more than {RATE_LIMIT} requests in a minute. Try again shortly."
-        );
-    }
-    hits.push_back(now);
-    v.passed.push(GateCheck::RateLimit);
-
     let Some(claims) = keys.verify(&req.session_token) else {
         block!(
             GateCheck::Session,
@@ -230,6 +217,21 @@ fn check(store: &mut Store, seed: &Seed, keys: &Keys, req: &GateRequest) -> Verd
     v.session_id = Some(session.id.clone());
     v.cap_cents = claims.cap_cents;
     v.passed.push(GateCheck::Session);
+
+    // Counted per signed token agent, after the session check, so requests without a
+    // valid token can't use up a real agent's limit.
+    let limited = claims.agent_id.as_str();
+    let now = Instant::now();
+    let hits = store.agent_hits.entry(limited.to_string()).or_default();
+    hits.retain(|t| now.duration_since(*t) < RATE_WINDOW);
+    if hits.len() >= RATE_LIMIT {
+        block!(
+            GateCheck::RateLimit,
+            "{limited} sent more than {RATE_LIMIT} requests in a minute. Try again shortly."
+        );
+    }
+    hits.push_back(now);
+    v.passed.push(GateCheck::RateLimit);
 
     if !seed.agents.iter().any(|a| a.agent_id == agent) {
         block!(
@@ -286,6 +288,13 @@ fn check(store: &mut Store, seed: &Seed, keys: &Keys, req: &GateRequest) -> Verd
 
     let amount = cents(req.amount);
     let order_id = req.order_id.as_str();
+    // NaN rounds to 0 cents, so it lands here too.
+    if amount <= 0 {
+        block!(
+            GateCheck::Order,
+            "The return amount has to be more than $0."
+        );
+    }
     let Some(order) = seed
         .orders
         .iter()
@@ -403,5 +412,114 @@ fn cap_label(cents: i64) -> String {
         format!("${}", cents / 100)
     } else {
         usd(cents)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::session::{self, Session};
+
+    struct Shop {
+        store: Store,
+        seed: Seed,
+        keys: Keys,
+        token: String,
+    }
+
+    /// Kaylee has approved muse-demo with a $50 cap, as in the demo.
+    fn shop() -> Shop {
+        let seed: Seed = serde_json::from_str(crate::SEED_JSON).unwrap();
+        let keys = Keys::from_env();
+        let (session, token) = session::demo_session(&keys).unwrap();
+        let mut store = Store::default();
+        store.sessions.insert(session.id.clone(), session);
+        Shop {
+            store,
+            seed,
+            keys,
+            token,
+        }
+    }
+
+    fn request(token: &str, request_id: &str, order_id: &str, amount: f64) -> GateRequest {
+        serde_json::from_value(json!({
+            "request_id": request_id, "session_token": token, "agent_id": "muse-demo",
+            "order_id": order_id, "reason": "damaged", "amount": amount,
+        }))
+        .unwrap()
+    }
+
+    fn blocked_by(shop: &mut Shop, req: &GateRequest) -> Option<GateCheck> {
+        check(&mut shop.store, &shop.seed, &shop.keys, req)
+            .blocked
+            .map(|(check, _)| check)
+    }
+
+    fn id() -> String {
+        uuid::Uuid::new_v4().to_string()
+    }
+
+    #[test]
+    fn within_the_cap_passes() {
+        let mut shop = shop();
+        let req = request(&shop.token.clone(), &id(), "o_1", 36.0);
+        assert_eq!(blocked_by(&mut shop, &req), None);
+    }
+
+    #[test]
+    fn over_the_cap_blocks() {
+        let mut shop = shop();
+        let req = request(&shop.token.clone(), &id(), "o_2", 120.0);
+        assert_eq!(blocked_by(&mut shop, &req), Some(GateCheck::RefundCap));
+    }
+
+    #[test]
+    fn a_resent_request_id_blocks_as_a_duplicate() {
+        let mut shop = shop();
+        let request_id = id();
+        shop.store
+            .by_request
+            .insert(request_id.clone(), "bh_0001".into());
+        let req = request(&shop.token.clone(), &request_id, "o_1", 36.0);
+        assert_eq!(blocked_by(&mut shop, &req), Some(GateCheck::Idempotency));
+    }
+
+    #[test]
+    fn an_expired_token_blocks() {
+        let mut shop = shop();
+        let scopes = vec![Scope::PoppyRead, Scope::PoppyWrite];
+        let mut session = Session::pending("muse-demo", "c_1", scopes.clone(), 5000);
+        let token = session
+            .activate(&shop.keys, scopes, 5000, chrono::Duration::minutes(-1))
+            .unwrap();
+        shop.store.sessions.insert(session.id.clone(), session);
+        let req = request(&token, &id(), "o_1", 36.0);
+        assert_eq!(blocked_by(&mut shop, &req), Some(GateCheck::Expiry));
+    }
+
+    #[test]
+    fn zero_or_negative_amounts_block() {
+        let mut shop = shop();
+        for amount in [0.0, -5.0] {
+            let req = request(&shop.token.clone(), &id(), "o_1", amount);
+            assert_eq!(blocked_by(&mut shop, &req), Some(GateCheck::Order));
+        }
+    }
+
+    #[test]
+    fn junk_tokens_cant_use_up_the_agents_rate_limit() {
+        let mut shop = shop();
+        for _ in 0..RATE_LIMIT + 2 {
+            let junk = request("not-a-token", &id(), "o_1", 36.0);
+            assert_eq!(blocked_by(&mut shop, &junk), Some(GateCheck::Session));
+        }
+        // The real agent still gets its full limit, then the next request blocks.
+        for _ in 0..RATE_LIMIT {
+            let req = request(&shop.token.clone(), &id(), "o_2", 120.0);
+            assert_eq!(blocked_by(&mut shop, &req), Some(GateCheck::RefundCap));
+        }
+        let req = request(&shop.token.clone(), &id(), "o_2", 120.0);
+        assert_eq!(blocked_by(&mut shop, &req), Some(GateCheck::RateLimit));
     }
 }
