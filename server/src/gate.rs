@@ -305,10 +305,13 @@ fn check(store: &mut Store, seed: &Seed, keys: &Keys, req: &GateRequest) -> Verd
             "Order {order_id} isn't one of this customer's orders."
         );
     };
-    if amount > cents(order.total) {
+    // The price comes from the order, not the agent: a $36 claim on the $120 crate
+    // would otherwise slip under a $50 cap. shortcut: whole-order returns only; price per
+    // item once a return can name items.
+    if amount != cents(order.total) {
         block!(
             GateCheck::Order,
-            "{} is more than order {order_id}'s {} total.",
+            "{} doesn't match order {order_id}'s {} total. Returns cover the whole order.",
             usd(amount),
             usd(cents(order.total))
         );
@@ -496,6 +499,14 @@ mod tests {
         shop.store.sessions.insert(session.id.clone(), session);
         let req = request(&token, &id(), "o_1", 36.0);
         assert_eq!(blocked_by(&mut shop, &req), Some(GateCheck::Expiry));
+    }
+
+    #[test]
+    fn a_claim_below_the_order_price_blocks() {
+        let mut shop = shop();
+        // $36 claimed on the $120 crate would fit under the $50 cap.
+        let req = request(&shop.token.clone(), &id(), "o_2", 36.0);
+        assert_eq!(blocked_by(&mut shop, &req), Some(GateCheck::Order));
     }
 
     #[test]
