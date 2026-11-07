@@ -1,0 +1,8 @@
+# LF everywhere: the deploy scripts run on Linux, and the repo is edited from Windows/WSL too.
+* text=auto eol=lf
+
+# Hide lockfiles, generated types and Redo's spec from diffs and GitHub language stats.
+server/Cargo.lock linguist-generated
+web/pnpm-lock.yaml linguist-generated
+web/src/types/generated/** linguist-generated
+docs/redo/openapi.yaml linguist-vendored
