@@ -22,7 +22,13 @@ Built solo for Crimson Hacks 2026. The demo shop is Cache Valley Honey Co., a ma
    ```
    `--reset` empties the demo shop first. The script prints a consent link. Open it, approve write access with a $50 cap, and watch the dashboard: the $36 passes, then the $120 and the replay are blocked.
 
-The live demo shares one in-memory state, so you may see another visitor's run.
+The live demo shares one in-memory state, so you may see another visitor's run. Click **Reset demo** on the dashboard to bring back the three requests above.
+
+## Tested with Meta's Muse
+
+On 2026-11-06 we pointed Meta's Muse at the live shop and asked it to return a broken candle set. With no help from us, it found `/.well-known/poppy.json`, opened a PAP session, and filed the $36 return. The gate passed it, Redo opened a real return, and the proof checks out (all 6 links).
+
+It also showed us a gap. Muse opened the consent link meant for the customer and approved its own $50 cap. The brief left out customer sign-in, so the consent screen trusts whoever opens it. Binding consent to the customer's sign-in (PAP's OAuth issuer) is the first thing next. Details in [`docs/findings.md`](docs/findings.md).
 
 ## How it works
 
@@ -77,7 +83,7 @@ BEEHIVE_URL=http://localhost:3000 node agent/agent.ts --reset   # then approve t
 - **Dashboard:** [React](https://react.dev), [Vite](https://vite.dev), [TanStack Query](https://tanstack.com/query), [Tailwind CSS](https://tailwindcss.com), [shadcn/ui](https://ui.shadcn.com) on [Radix](https://www.radix-ui.com), [zod](https://zod.dev), [Lucide](https://lucide.dev), [Geist](https://vercel.com/font), [json-schema-to-typescript](https://github.com/bcherny/json-schema-to-typescript).
 - **One contract:** `schema/beehive.schema.json` generates both the Rust types (typify) and the TypeScript types.
 - **Hosting:** AWS Lightsail, [Caddy](https://caddyserver.com), [sslip.io](https://sslip.io).
-- **Starter kit:** my own Hackathon Starter template, inspired by [Juan Lizarazo's hackathon-starter-kit](https://github.com/juanlizarazo/hackathon-starter-kit). It holds only agent rules, slash commands and plan templates (`.claude/`, `AGENTS.md`, `brief/`, `plans/`, `start/`). No app code: everything in `server/`, `web/`, `agent/` and `schema/` was written during the event.
+- **Starter kit:** my own [Hackathon Starter template](https://github.com/melizalde-ds/hackathon-starter), inspired by [Juan Lizarazo's hackathon-starter-kit](https://github.com/juanlizarazo/hackathon-starter-kit). It holds only agent rules, slash commands and plan templates (`.claude/`, `AGENTS.md`, `brief/`, `plans/`, `start/`). No app code: everything in `server/`, `web/`, `agent/` and `schema/` was written during the event.
 
 ## License
 
