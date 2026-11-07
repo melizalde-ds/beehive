@@ -4,5 +4,15 @@
   "endpoints": { "session": "/poppy/session", "returns": "/poppy/returns" },
   "scopes_supported": ["poppy:read", "poppy:write"],
   "session_modes": ["guest", "signed_in"],
-  "max_session_seconds": 900
+  "max_session_seconds": 900,
+  "protocol_version": "0.3",
+  "organization": { "name": "Cache Valley Honey Co.", "domain": "32-189-214-147.sslip.io" },
+  "agent": {
+    "protocols": [{ "type": "poppy", "endpoint": "https://32-189-214-147.sslip.io/poppy/session", "access": "session" }]
+  },
+  "auth": { "issuer": "https://32-189-214-147.sslip.io" },
+  "return_request": {
+    "fields": ["request_id", "session_token", "agent_id", "order_id", "reason", "amount"],
+    "reasons": ["damaged", "wrong_item", "changed_mind", "forgot_cancel"]
+  }
 }
