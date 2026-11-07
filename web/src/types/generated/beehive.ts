@@ -31,17 +31,22 @@ export type GateDecision = "pass" | "block";
 export type GateCheck =
   "session" | "agent_identity" | "scope" | "refund_cap" | "expiry" | "replay" | "idempotency" | "rate_limit" | "order";
 /**
- * This interface was referenced by `Beehive`'s JSON-Schema
- * via the `definition` "RiskLevel".
- */
-export type RiskLevel = "LOW" | "MEDIUM" | "HIGH";
-/**
- * LOW → approved, MEDIUM → manual_review, HIGH → denied.
+ * Redo's own return status (return-status.schema in docs/redo/openapi.yaml). open = approved and awaiting shipment; needs_review / in_review = a person at the shop decides; rejected = denied.
  *
  * This interface was referenced by `Beehive`'s JSON-Schema
  * via the `definition` "RedoStatus".
  */
-export type RedoStatus = "approved" | "manual_review" | "denied";
+export type RedoStatus =
+  | "open"
+  | "in_transit"
+  | "delivered"
+  | "needs_review"
+  | "in_review"
+  | "complete"
+  | "rejected"
+  | "flagged"
+  | "pre_shipment"
+  | "deleted";
 /**
  * This interface was referenced by `Beehive`'s JSON-Schema
  * via the `definition` "EvidenceStep".
@@ -103,10 +108,9 @@ export interface RedoResult {
    * Redo's id for the return.
    */
   return_id: string;
-  risk: RiskLevel;
   status: RedoStatus;
   /**
-   * Return label. Only for approved returns.
+   * Redo's postageLabelUrl for the return. Null until Redo has a label.
    */
   label_url: string | null;
 }

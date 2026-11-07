@@ -36,25 +36,20 @@
       "type": "string",
       "enum": ["session", "agent_identity", "scope", "refund_cap", "expiry", "replay", "idempotency", "rate_limit", "order"]
     },
-    "RiskLevel": {
-      "type": "string",
-      "enum": ["LOW", "MEDIUM", "HIGH"]
-    },
     "RedoStatus": {
-      "description": "LOW → approved, MEDIUM → manual_review, HIGH → denied.",
+      "description": "Redo's own return status (return-status.schema in docs/redo/openapi.yaml). open = approved and awaiting shipment; needs_review / in_review = a person at the shop decides; rejected = denied.",
       "type": "string",
-      "enum": ["approved", "manual_review", "denied"]
+      "enum": ["open", "in_transit", "delivered", "needs_review", "in_review", "complete", "rejected", "flagged", "pre_shipment", "deleted"]
     },
     "RedoResult": {
       "description": "What Redo returned for a return that passed the gate.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["return_id", "risk", "status", "label_url"],
+      "required": ["return_id", "status", "label_url"],
       "properties": {
         "return_id": { "description": "Redo's id for the return.", "type": "string", "minLength": 1 },
-        "risk": { "$ref": "#/definitions/RiskLevel" },
         "status": { "$ref": "#/definitions/RedoStatus" },
-        "label_url": { "description": "Return label. Only for approved returns.", "type": ["string", "null"] }
+        "label_url": { "description": "Redo's postageLabelUrl for the return. Null until Redo has a label.", "type": ["string", "null"] }
       }
     },
     "GateResponse": {
