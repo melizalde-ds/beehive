@@ -125,7 +125,10 @@ async fn main() -> anyhow::Result<()> {
             "/.well-known/oauth-authorization-server",
             get(poppy::oauth_metadata),
         )
-        .route("/poppy/session", post(poppy::create_session))
+        .route(
+            "/poppy/session",
+            post(poppy::create_session).get(poppy::session_help),
+        )
         .route("/poppy/session/{session_id}", get(poppy::get_session))
         .route("/consent/{session_id}", post(poppy::decide))
         .route("/poppy/returns", post(gate::file_return))

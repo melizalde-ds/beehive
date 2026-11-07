@@ -98,6 +98,19 @@ pub async fn oauth_metadata() -> Json<Value> {
     }))
 }
 
+/// `GET /poppy/session`: browser-driven agents (Muse) land here with a GET, so say how to POST.
+pub async fn session_help() -> Json<Value> {
+    let parse = |s: &str| serde_json::from_str::<Value>(s).unwrap_or(Value::Null);
+    Json(json!({
+        "message": "Open a PAP session with POST /poppy/session and a JSON body like `example`. The customer approves it at the returned consent_url. Then POST each return to /poppy/returns with the session_token, like `return_example`.",
+        "method": "POST",
+        "content_type": "application/json",
+        "example": parse(include_str!("../../schema/examples/SessionRequest.json")),
+        "return_example": parse(include_str!("../../schema/examples/GateRequest.json")),
+        "discovery": "/.well-known/poppy.json",
+    }))
+}
+
 /// The agent asks; nothing is allowed until the customer approves on the consent screen.
 pub async fn create_session(
     State(state): State<AppState>,
