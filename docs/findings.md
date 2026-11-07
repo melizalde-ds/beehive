@@ -21,7 +21,7 @@ Add an entry as soon as you hit one. Newest first.
 - **When:** phase 02, while building the gate's handoff to Redo (read from the spec, not tested live yet)
 - **What we found:** The word "agent" appears nowhere in Redo's OpenAPI spec. The return import body (`bulk-returns-request.schema`) has `customer`, `notes`, `externalReferenceId` and `idempotencyKey`, but no field for who filed the return, which agent it was, or what the customer allowed. On a return, `source` holds only the customer's email and name, and return tags come only from `merchant` or `redo`. So once agent-filed returns reach Redo, the shop can't tell them apart from ones the customer filed, and Redo's review can't weigh them differently.
 - **Evidence:** `docs/redo/openapi.yaml`: `bulk-returns-request.schema`, the return `source` object, the return tag `source` enum (`merchant`, `redo`)
-- **What we did:** Plan for phase 03: put Beehive's attempt id (`bh_0001`) in `externalReferenceId`, and the agent, the customer's cap and the evidence chain head in `notes`. Beehive's dashboard and `verify` hold the full record.
+- **What we did:** Every return Beehive imports carries the proof in Redo's free-text `notes`: "Filed by agent muse-demo for Kaylee Jensen through Beehive bh_0001, within a $50.00 cap the customer approved. Proof: gate decision hash a7e3…21aa". The hash matches the gate decision link that `GET /verify/bh_0001` checks. `externalReferenceId` stays the order id (`cvh-o-1`). Beehive's dashboard and `verify` hold the full record.
 - **Pitch line:** "Redo can't tell yet that an agent filed a return. Beehive records which agent, on whose behalf and under what limit, and hands Redo a proof id it can check."
 
 ### Redo: tested against a real store, and what the docs don't tell you

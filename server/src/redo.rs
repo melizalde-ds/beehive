@@ -82,18 +82,21 @@ impl Redo {
     }
 
     /// `request_id` is Redo's `idempotencyKey`, so a replay gets the same return id.
+    /// `notes` goes on the Redo return so the shop sees which agent filed it and the proof.
     pub async fn import_return(
         &self,
         seed: &Seed,
         req: &GateRequest,
+        notes: &str,
     ) -> Result<RedoResult, RedoError> {
         let (return_id, status, label_url) = match self {
             Redo::Mock => {
+                tracing::info!(notes, "mock Redo return (real mode sends these notes)");
                 // 24 hex chars, like a Redo id; same key, same id.
                 let hash = hex::encode(Sha256::digest(req.request_id.as_bytes()));
                 (hash[..24].to_string(), RedoStatus::Open, None)
             }
-            Redo::Real(real) => real.import_return(seed, req).await?,
+            Redo::Real(real) => real.import_return(seed, req, notes).await?,
         };
         Ok(RedoResult {
             return_id: return_id
@@ -235,6 +238,7 @@ impl Real {
         &self,
         seed: &Seed,
         req: &GateRequest,
+        notes: &str,
     ) -> Result<(String, RedoStatus, Option<String>), RedoError> {
         let missing = |what: &str| RedoError::new(None, format!("{what} not in the seed"));
         let order = seed
@@ -268,7 +272,7 @@ impl Real {
             "externalReferenceId": order_id(&order.id),
             "currency": "USD",
             "customer": { "firstName": first, "lastName": last, "email": customer.email },
-            "notes": format!("Filed by agent {} for {}", req.agent_id.as_str(), customer.name),
+            "notes": notes,
             "products": products,
         }]});
         let path = format!("/stores/{}/returns/bulk", self.store_id);

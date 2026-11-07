@@ -22,7 +22,8 @@ This is a hackathon build. `.claude/rules/hackathon.md` wins over any stricter r
 | Dev session (from phase 02) | `cd server && BEEHIVE_DEMO_SESSION=1 cargo run`, token is in the log |
 | Contract check | `cd server && cargo test` · after a schema change: `cd web && pnpm gen:types` |
 | Build | `cd server && cargo build --release` · `cd web && pnpm build` |
-| Seed Redo (phase 03) | not built yet; see `docs/redo-integration.md` |
+| Agent script (phase 04) | `BEEHIVE_URL=http://localhost:3000 node agent/agent.ts`, then approve the consent link it prints |
+| Real Redo (phase 03) | `cd server && set -a; . ../.env; set +a; REDO_MODE=real cargo run` (seeds the Redo store at startup; falls back to mock with a warn) |
 | Deploy | not decided (ask first) |
 | Live URL | none yet |
 
@@ -30,7 +31,7 @@ This is a hackathon build. `.claude/rules/hackathon.md` wins over any stricter r
 
 1. Start the API and the dashboard (see Dev above), open `http://localhost:5173`.
 2. No login. The demo customer is Kaylee Jensen (`c_1`), and the agent is `muse-demo`.
-3. Follow the demo path in `brief/brief.md` step by step in a browser tool.
+3. Run the agent script (see Commands), open the consent link it prints, approve the $50 cap, and watch the dashboard. Then follow the rest of the demo path in `brief/brief.md` in a browser tool. Restart the server between runs (state is in memory).
 4. Check phone width (375px).
 5. Report what you clicked and what you saw.
 
@@ -83,6 +84,9 @@ Never:
 - Edit `schema/beehive.schema.json` as text. Rewriting it with a JSON library reformats the whole file and buries the diff.
 - `jsonwebtoken` 11 needs a crypto backend feature; we use `rust_crypto`.
 - `.env` isn't loaded automatically (no dotenv crate yet). Export vars in the shell, or ask before adding `dotenvy`.
+- `shadcn add` in `web/` is non-interactive only with `</dev/null`. It imports `cn` from the `cn` package (shadcn's own); that's expected.
+- API responses are validated with zod built from `schema/beehive.schema.json` (`web/src/api/client.ts`). A schema change is picked up without hand edits; keep `$schema` draft-07 there or `definitions` refs break.
+- `.gitnexus/` is gitignored, so worktrees don't have the GitNexus CLI. Run it from the main checkout.
 
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence

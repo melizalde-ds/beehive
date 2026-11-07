@@ -106,7 +106,16 @@ pub async fn run(state: &AppState, req: GateRequest) -> Result<GateResponse, App
         (return_id, events, record, reason)
     };
 
-    let redo = state.redo.import_return(&state.seed, &req).await;
+    // Redo has no field for "an agent filed this" (docs/findings.md), so the note carries
+    // Beehive's proof: the attempt id, the approved cap, and the gate decision's chain hash.
+    let gate_hash = evidence::head(&evidence::chain(events.clone()));
+    let notes = format!(
+        "Filed by agent {} for {} through Beehive {return_id}, within a ${:.2} cap the customer approved. Proof: gate decision hash {gate_hash}",
+        req.agent_id.as_str(),
+        record.customer_name,
+        record.refund_cap,
+    );
+    let redo = state.redo.import_return(&state.seed, &req, &notes).await;
     let mut store = state.store();
     match redo {
         Ok(redo) => {

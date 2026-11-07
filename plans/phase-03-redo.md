@@ -16,6 +16,8 @@
 - [x] `redo_result` evidence link records which mode answered (`redo_mode`)
 - [x] One small test: the parsers read the real fixtures
 - [x] Walk: mock, then real ($36 passes with a real Redo id, $120 and the replay never reach Redo)
+- [x] Follow-up (branch `phase-03-redo-proof`): Redo's `notes` carries Beehive's proof, because Redo has no field for "an agent filed this" (`docs/findings.md`). The gate builds it: agent, customer, attempt id (`bh_0001`), approved cap, and the hash of the gate decision link. Mock mode logs it. Walked in mock: the hash in the note equals the `gate_decision` link hash in `/evidence/bh_0001`
+- [ ] Walk the follow-up in real mode: open the return in Redo's dashboard, check the note shows
 
 ## Questions asked
 
@@ -36,13 +38,14 @@
 
 - [x] This phase's step of the demo path works in the running app
 - [x] Report written: what you clicked, what you saw
-- [ ] Waiting for me to say commit
+- [x] Waiting for me to say commit (`4a48e76`)
 
 ## Status (handoff)
 
-Built and walked (not committed). `cargo clippy` and `cargo fmt` clean; 3 tests pass (2 contract + 1 fixture parser).
+Committed (`4a48e76`), merged to `main`. `cargo clippy` and `cargo fmt` clean; 3 tests pass (2 contract + 1 fixture parser).
 
-- `AppState.redo` holds the client. `gate::run` calls `state.redo.import_return(&state.seed, &req)`; on `Err` it logs the `RedoError` and answers 502, as before.
+- `AppState.redo` holds the client. `gate::run` builds the proof note and calls `state.redo.import_return(&state.seed, &req, &notes)`; on `Err` it logs the `RedoError` and answers 502, as before.
+- The note's hash is the gate decision link, not the final chain head: the head is only known after Redo answers (the Redo result is the last link). `GET /verify/bh_…` checks that link.
 - Real mode: `set -a; . ../.env; set +a; REDO_MODE=real cargo run`. Startup seeds the Redo store (about 3.5 s) before it listens.
 - Every real pass makes 3 Redo calls: import, status, label. The label call always gets a 500 today (known bug), logged as a warn.
 
