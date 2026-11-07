@@ -14,7 +14,6 @@ use crate::{
     AppState, Attempt, Store,
     error::AppError,
     evidence::{self, Event},
-    redo,
     session::{Keys, Session},
     types::{
         EvidenceStep, GateCheck, GateDecision, GateRequest, GateResponse, RedoResult, ReturnList,
@@ -89,19 +88,20 @@ pub async fn run(state: &AppState, req: GateRequest) -> Result<GateResponse, App
         (return_id, events, record, reason)
     };
 
-    let redo = redo::import_return(&req).await;
+    let redo = state.redo.import_return(&state.seed, &req).await;
     let mut store = state.store();
     match redo {
         Ok(redo) => {
             events.push(Event::now(
                 EvidenceStep::RedoResult,
-                json!({ "return_id": *redo.return_id, "status": redo.status, "label_url": redo.label_url }),
+                json!({ "return_id": *redo.return_id, "status": redo.status, "label_url": redo.label_url,
+                        "redo_mode": state.redo.mode() }),
             ));
             record.redo = Some(redo.clone());
             finish(&mut store, record, events, Some(redo), reason)
         }
         Err(error) => {
-            tracing::error!(return_id, error, "Redo return import failed");
+            tracing::error!(return_id, %error, "Redo return import failed");
             store.by_request.remove(req.request_id.as_str());
             store.passed_orders.remove(req.order_id.as_str());
             Err(AppError::new(

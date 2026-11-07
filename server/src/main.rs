@@ -26,6 +26,7 @@ const SEED_JSON: &str = include_str!("../../seed/cache-valley-honey.json");
 pub struct AppState {
     seed: Arc<types::Seed>,
     keys: Arc<session::Keys>,
+    redo: Arc<redo::Redo>,
     store: Arc<Mutex<Store>>,
 }
 
@@ -92,9 +93,11 @@ async fn main() -> anyhow::Result<()> {
         tracing::info!("demo session token: {token}");
         store.sessions.insert(session.id.clone(), session);
     }
+    let redo = redo::Redo::from_env(&seed).await;
     let state = AppState {
         seed: Arc::new(seed),
         keys: Arc::new(keys),
+        redo: Arc::new(redo),
         store: Arc::new(Mutex::new(store)),
     };
 
