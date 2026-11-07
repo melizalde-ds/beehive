@@ -6,6 +6,7 @@
 import type {
   GateRequest,
   GateResponse,
+  OrderList,
   PoppyDiscovery,
   SessionRequest,
   SessionResponse,
@@ -15,12 +16,15 @@ const BASE = process.env.BEEHIVE_URL || "http://localhost:3000";
 const AGENT_ID = "muse-demo";
 const CONSENT_TIMEOUT_MS = 5 * 60_000;
 
-async function call<T>(path: string, body?: unknown): Promise<T> {
+async function call<T>(path: string, body?: unknown, token?: string): Promise<T> {
   let res: Response;
   try {
     res = await fetch(BASE + path, {
       method: body === undefined ? "GET" : "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+      },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
@@ -91,9 +95,23 @@ async function main() {
     }
   };
 
-  console.log("3. File the returns");
-  const candles = file("o_1", "damaged", 36);
-  const crate = file("o_2", "changed_mind", 120);
+  console.log("3. Read Kaylee's orders");
+  const { orders } = await call<OrderList>(shop.endpoints.orders, undefined, session.session_token);
+  for (const order of orders) {
+    const returned = order.return_id ? `, already returned (${order.return_id})` : "";
+    console.log(`  ${order.id} ${order.product_name} $${order.total}${returned}`);
+  }
+  // Prefer an order with no return yet; otherwise the gate shows why it blocks.
+  const pick = (product: string) => {
+    const matches = orders.filter((order) => order.product_name === product);
+    const order = matches.find((order) => !order.return_id) ?? matches[0];
+    if (!order) throw new Error(`Kaylee has no ${product} order to return.`);
+    return order.id;
+  };
+
+  console.log("4. File the returns");
+  const candles = file(pick("Beeswax Candle Set"), "damaged", 36);
+  const crate = file(pick("Honeycomb Gift Crate"), "changed_mind", 120);
   const candlePassed =
     !process.argv.includes("--skip-candle") &&
     (await fileReturn("$36 candle set arrived broken", candles))?.gate === "pass";

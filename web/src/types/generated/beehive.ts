@@ -268,6 +268,10 @@ export interface PoppyDiscovery {
   endpoints: {
     session: string;
     returns: string;
+    /**
+     * GET with `Authorization: Bearer <session_token>` and poppy:read.
+     */
+    orders: string;
   };
   scopes_supported: Scope[];
   session_modes: SessionMode[];
@@ -369,6 +373,39 @@ export interface ReturnRecord {
 export interface ReturnList {
   shop_id: string;
   returns: ReturnRecord[];
+}
+/**
+ * One of the signed-in customer's orders, as an agent sees it.
+ *
+ * This interface was referenced by `Beehive`'s JSON-Schema
+ * via the `definition` "CustomerOrder".
+ */
+export interface CustomerOrder {
+  id: string;
+  product_name: string;
+  /**
+   * RFC 3339.
+   */
+  placed_at: string;
+  /**
+   * RFC 3339. Null if not delivered yet.
+   */
+  delivered_at: string | null;
+  total: number;
+  /**
+   * The Beehive return that passed for this order, if any.
+   */
+  return_id: string | null;
+}
+/**
+ * GET /poppy/orders. The token's customer only, newest first.
+ *
+ * This interface was referenced by `Beehive`'s JSON-Schema
+ * via the `definition` "OrderList".
+ */
+export interface OrderList {
+  customer_id: string;
+  orders: CustomerOrder[];
 }
 /**
  * This interface was referenced by `Beehive`'s JSON-Schema

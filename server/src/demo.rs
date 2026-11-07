@@ -47,9 +47,9 @@ pub async fn seed(state: &AppState) -> anyhow::Result<()> {
     let candles_id = uuid::Uuid::new_v4().to_string();
     let crate_id = uuid::Uuid::new_v4().to_string();
     let demo = [
-        request(&candles_id, "o_1", "damaged", 36.0)?,
-        request(&crate_id, "o_2", "changed_mind", 120.0)?,
-        request(&candles_id, "o_1", "damaged", 36.0)?, // the replay
+        request(&candles_id, "o_5", "damaged", 36.0)?,
+        request(&crate_id, "o_6", "changed_mind", 120.0)?,
+        request(&candles_id, "o_5", "damaged", 36.0)?, // the replay
     ];
     for req in demo {
         // The gate only errors when Redo refuses the passed return; its message is logged there.
@@ -57,6 +57,8 @@ pub async fn seed(state: &AppState) -> anyhow::Result<()> {
             .await
             .map_err(|_| anyhow::anyhow!("Redo didn't take the seeded $36 return"))?;
     }
+    // The seeded requests shouldn't use up the live agent's rate limit.
+    state.store().agent_hits.clear();
     let _ = state.returns_changed.send(());
     Ok(())
 }

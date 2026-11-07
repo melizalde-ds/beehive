@@ -185,10 +185,11 @@
         "endpoints": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["session", "returns"],
+          "required": ["session", "returns", "orders"],
           "properties": {
             "session": { "type": "string" },
-            "returns": { "type": "string" }
+            "returns": { "type": "string" },
+            "orders": { "description": "GET with `Authorization: Bearer <session_token>` and poppy:read.", "type": "string" }
           }
         },
         "scopes_supported": { "type": "array", "items": { "$ref": "#/definitions/Scope" } },
@@ -278,6 +279,30 @@
       "properties": {
         "shop_id": { "type": "string" },
         "returns": { "type": "array", "items": { "$ref": "#/definitions/ReturnRecord" } }
+      }
+    },
+    "CustomerOrder": {
+      "description": "One of the signed-in customer's orders, as an agent sees it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "product_name", "placed_at", "delivered_at", "total", "return_id"],
+      "properties": {
+        "id": { "type": "string" },
+        "product_name": { "type": "string" },
+        "placed_at": { "description": "RFC 3339.", "type": "string" },
+        "delivered_at": { "description": "RFC 3339. Null if not delivered yet.", "type": ["string", "null"] },
+        "total": { "type": "number", "minimum": 0 },
+        "return_id": { "description": "The Beehive return that passed for this order, if any.", "type": ["string", "null"] }
+      }
+    },
+    "OrderList": {
+      "description": "GET /poppy/orders. The token's customer only, newest first.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["customer_id", "orders"],
+      "properties": {
+        "customer_id": { "type": "string" },
+        "orders": { "type": "array", "items": { "$ref": "#/definitions/CustomerOrder" } }
       }
     },
     "Billing": {

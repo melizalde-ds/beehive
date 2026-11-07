@@ -6,7 +6,7 @@ use std::{num::NonZeroU64, sync::LazyLock};
 use axum::{
     Json,
     extract::{Path, State, rejection::JsonRejection},
-    http::{StatusCode, Uri},
+    http::{HeaderMap, StatusCode, Uri, header::AUTHORIZATION},
 };
 use chrono::{Duration, SecondsFormat};
 use serde_json::{Value, json};
@@ -17,10 +17,11 @@ use crate::{
     evidence::Event,
     session::Session,
     types::{
-        ConsentDecision, EvidenceStep, PoppyDiscovery, PoppyDiscoveryAgent,
-        PoppyDiscoveryAgentProtocolsItem, PoppyDiscoveryAuth, PoppyDiscoveryEndpoints,
-        PoppyDiscoveryMerchant, PoppyDiscoveryOrganization, PoppyDiscoveryReturnRequest, Scope,
-        SessionMode, SessionRequest, SessionResponse, SessionStatus,
+        ConsentDecision, CustomerOrder, EvidenceStep, OrderList, PoppyDiscovery,
+        PoppyDiscoveryAgent, PoppyDiscoveryAgentProtocolsItem, PoppyDiscoveryAuth,
+        PoppyDiscoveryEndpoints, PoppyDiscoveryMerchant, PoppyDiscoveryOrganization,
+        PoppyDiscoveryReturnRequest, Scope, SessionMode, SessionRequest, SessionResponse,
+        SessionStatus,
     },
 };
 
@@ -66,6 +67,7 @@ pub async fn discovery(State(state): State<AppState>) -> Json<PoppyDiscovery> {
         endpoints: PoppyDiscoveryEndpoints {
             session: "/poppy/session".to_string(),
             returns: "/poppy/returns".to_string(),
+            orders: "/poppy/orders".to_string(),
         },
         scopes_supported: vec![Scope::PoppyRead, Scope::PoppyWrite],
         session_modes: vec![SessionMode::Guest, SessionMode::SignedIn],
@@ -102,7 +104,7 @@ pub async fn oauth_metadata() -> Json<Value> {
 pub async fn session_help() -> Json<Value> {
     let parse = |s: &str| serde_json::from_str::<Value>(s).unwrap_or(Value::Null);
     Json(json!({
-        "message": "Open a PAP session with POST /poppy/session and a JSON body like `example`. The customer approves it at the returned consent_url. Then POST each return to /poppy/returns with the session_token, like `return_example`.",
+        "message": "Open a PAP session with POST /poppy/session and a JSON body like `example`. The customer approves it at the returned consent_url. Then GET /poppy/orders with `Authorization: Bearer <session_token>` to see the customer's orders, and POST each return to /poppy/returns with the session_token, like `return_example`.",
         "method": "POST",
         "content_type": "application/json",
         "example": parse(include_str!("../../schema/examples/SessionRequest.json")),
@@ -161,6 +163,74 @@ pub async fn create_session(
     let res = response(&session);
     state.store().sessions.insert(session.id.clone(), session);
     Ok(Json(res))
+}
+
+/// The token's customer's orders, so an agent can pick one to return. Needs poppy:read.
+pub async fn list_orders(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Json<OrderList>, AppError> {
+    let unauthorized = |message: &str| {
+        AppError::new(
+            StatusCode::UNAUTHORIZED,
+            "unauthorized",
+            message.to_string(),
+        )
+    };
+    let token = headers
+        .get(AUTHORIZATION)
+        .and_then(|value| value.to_str().ok())
+        .and_then(|value| value.strip_prefix("Bearer "))
+        .ok_or_else(|| {
+            unauthorized("Send the session token as `Authorization: Bearer <token>`.")
+        })?;
+    let claims = state
+        .keys
+        .verify(token)
+        .ok_or_else(|| unauthorized("The session token isn't one this shop issued."))?;
+    let store = state.store();
+    let session = store
+        .sessions
+        .get(&claims.sid)
+        .filter(|s| s.status == SessionStatus::Active)
+        .filter(|s| s.token_id.as_deref() == Some(claims.jti.as_str()))
+        .ok_or_else(|| unauthorized("This session isn't active, or the token was replaced."))?;
+    if claims.exp <= chrono::Utc::now().timestamp() {
+        return Err(unauthorized(
+            "The session expired. The customer needs to approve a new one.",
+        ));
+    }
+    if !claims.scopes.contains(&Scope::PoppyRead) {
+        return Err(AppError::new(
+            StatusCode::FORBIDDEN,
+            "forbidden",
+            "The customer didn't allow this agent to see their orders (no poppy:read).",
+        ));
+    }
+    let seed = &state.seed;
+    let mut orders: Vec<CustomerOrder> = seed
+        .orders
+        .iter()
+        .filter(|order| order.customer_id == session.customer_id)
+        .map(|order| CustomerOrder {
+            id: order.id.clone(),
+            product_name: order
+                .items
+                .first()
+                .and_then(|item| seed.products.iter().find(|p| p.id == item.product_id))
+                .map_or_else(|| "Unknown product".to_string(), |p| p.name.clone()),
+            placed_at: order.placed_at.clone(),
+            delivered_at: order.delivered_at.clone(),
+            total: order.total,
+            return_id: store.passed_orders.get(&order.id).cloned(),
+        })
+        .collect();
+    // shortcut: sorts RFC 3339 as text, right while every seed date shares one offset; parse if that changes.
+    orders.sort_by(|a, b| b.placed_at.cmp(&a.placed_at));
+    Ok(Json(OrderList {
+        customer_id: session.customer_id.clone(),
+        orders,
+    }))
 }
 
 /// The agent polls this until the customer decides.

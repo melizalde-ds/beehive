@@ -15,6 +15,7 @@ mod tests {
             "Evidence" => serde_json::from_str::<Evidence>(json).map(drop),
             "GateRequest" => serde_json::from_str::<GateRequest>(json).map(drop),
             "GateResponse" => serde_json::from_str::<GateResponse>(json).map(drop),
+            "OrderList" => serde_json::from_str::<OrderList>(json).map(drop),
             "PoppyDiscovery" => serde_json::from_str::<PoppyDiscovery>(json).map(drop),
             "ReturnList" => serde_json::from_str::<ReturnList>(json).map(drop),
             "SessionRequest" => serde_json::from_str::<SessionRequest>(json).map(drop),

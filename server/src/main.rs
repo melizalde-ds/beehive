@@ -131,6 +131,7 @@ async fn main() -> anyhow::Result<()> {
         )
         .route("/poppy/session/{session_id}", get(poppy::get_session))
         .route("/consent/{session_id}", post(poppy::decide))
+        .route("/poppy/orders", get(poppy::list_orders))
         .route("/poppy/returns", post(gate::file_return))
         .route("/gate/returns", post(gate::file_return))
         .route("/returns", get(gate::list_returns))

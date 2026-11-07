@@ -47,7 +47,7 @@ flowchart LR
 
 The Hash-Chain Comb: agent, gate, Redo.
 
-1. **PAP front door** (Rust, Axum). The agent finds the shop at `/.well-known/poppy.json`, asks for a session at `POST /poppy/session`, and the customer approves the scopes and a refund cap on a consent screen. The session token is a short-lived JWT with a unique token id. The agent files at `POST /poppy/returns`.
+1. **PAP front door** (Rust, Axum). The agent finds the shop at `/.well-known/poppy.json`, asks for a session at `POST /poppy/session`, and the customer approves the scopes and a refund cap on a consent screen. The session token is a short-lived JWT with a unique token id. The agent reads the customer's orders at `GET /poppy/orders` (needs `poppy:read`), then files at `POST /poppy/returns`.
 2. **Rust gate.** Every request runs the same checks in order, and the first one that fails blocks it: rate limit per agent, session, agent identity, expiry, replay (token id), scope, idempotency (request id), order, refund cap. The agent can only ask. A blocked request never reaches Redo.
 3. **Redo handoff.** A passed request becomes a Redo return through Redo's return import, with the request id as Redo's `idempotencyKey`. From there it's Redo's return: Beehive makes no return decisions. Redo has no field for "an agent filed this", so Beehive writes which agent, for whom, under what cap, and the gate's hash into the return's `notes`.
 4. **Proof.** Each step (discovery, session, consent, request, gate decision, Redo result) is one link in a SHA-256 hash chain. `GET /verify/{return_id}` recomputes it and reports the first broken link.
