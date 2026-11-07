@@ -1,15 +1,15 @@
 //! PAP front door: discovery, sessions the customer approves, and the returns endpoint.
 //! `/poppy/returns` is the gate's own handler, so agents get the exact same checks.
 
-use std::num::NonZeroU64;
+use std::{num::NonZeroU64, sync::LazyLock};
 
 use axum::{
     Json,
     extract::{Path, State, rejection::JsonRejection},
-    http::StatusCode,
+    http::{StatusCode, Uri},
 };
 use chrono::{Duration, SecondsFormat};
-use serde_json::json;
+use serde_json::{Value, json};
 
 use crate::{
     AppState,
@@ -17,18 +17,47 @@ use crate::{
     evidence::Event,
     session::Session,
     types::{
-        ConsentDecision, EvidenceStep, PoppyDiscovery, PoppyDiscoveryEndpoints,
-        PoppyDiscoveryMerchant, Scope, SessionMode, SessionRequest, SessionResponse, SessionStatus,
+        ConsentDecision, EvidenceStep, PoppyDiscovery, PoppyDiscoveryAgent,
+        PoppyDiscoveryAgentProtocolsItem, PoppyDiscoveryAuth, PoppyDiscoveryEndpoints,
+        PoppyDiscoveryMerchant, PoppyDiscoveryOrganization, PoppyDiscoveryReturnRequest, Scope,
+        SessionMode, SessionRequest, SessionResponse, SessionStatus,
     },
 };
 
 /// Short expiry stands in for DPoP on the demo (brief: "DPoP is next").
 const MAX_SESSION_SECONDS: NonZeroU64 = NonZeroU64::new(900).unwrap();
 
+/// What a return needs, read from the contract so it can't drift from `GateRequest` and `Reason`.
+static RETURN_REQUEST: LazyLock<PoppyDiscoveryReturnRequest> = LazyLock::new(|| {
+    let schema: Value = serde_json::from_str(include_str!("../../schema/beehive.schema.json"))
+        .expect("the schema typify already parsed is JSON");
+    let defs = &schema["definitions"];
+    serde_json::from_value(json!({
+        "fields": defs["GateRequest"]["required"],
+        "reasons": defs["Reason"]["enum"],
+    }))
+    .expect("the schema has GateRequest.required and Reason.enum")
+});
+
 pub async fn discovery(State(state): State<AppState>) -> Json<PoppyDiscovery> {
     let shop = &state.seed.shop;
+    let issuer = issuer();
     Json(PoppyDiscovery {
         pap_version: "0.1-draft".to_string(),
+        protocol_version: "0.3".to_string(),
+        organization: PoppyDiscoveryOrganization {
+            name: shop.name.clone(),
+            domain: domain(),
+        },
+        agent: PoppyDiscoveryAgent {
+            protocols: vec![PoppyDiscoveryAgentProtocolsItem {
+                type_: "poppy".to_string(),
+                endpoint: format!("{issuer}/poppy/session"),
+                access: "session".to_string(),
+            }],
+        },
+        auth: PoppyDiscoveryAuth { issuer },
+        return_request: RETURN_REQUEST.clone(),
         merchant: PoppyDiscoveryMerchant {
             id: shop.id.clone(),
             name: shop.name.clone(),
@@ -42,6 +71,31 @@ pub async fn discovery(State(state): State<AppState>) -> Json<PoppyDiscovery> {
         session_modes: vec![SessionMode::Guest, SessionMode::SignedIn],
         max_session_seconds: MAX_SESSION_SECONDS,
     })
+}
+
+/// RFC 9728 metadata for the shop's domain. The PAP SDK reads it to find the issuer.
+pub async fn protected_resource() -> Json<Value> {
+    Json(json!({
+        "resource": format!("https://{}", domain()),
+        "authorization_servers": [issuer()],
+    }))
+}
+
+/// RFC 8414 metadata with the fields the PAP SDK (draft 0.3) requires.
+/// shortcut: static only, the brief cuts real OAuth; the token endpoints 404, so an agent
+/// that tries to sign in stops there. Upgrade when sign-in is in scope.
+pub async fn oauth_metadata() -> Json<Value> {
+    let issuer = issuer();
+    let domain = domain();
+    Json(json!({
+        "issuer": issuer,
+        "token_endpoint": format!("{issuer}/oauth/token"),
+        "revocation_endpoint": format!("{issuer}/oauth/revoke"),
+        "grant_types_supported": ["refresh_token"],
+        "scopes_supported": [Scope::PoppyRead, Scope::PoppyWrite],
+        "protected_resources": [format!("https://{domain}")],
+        "poppy_domains": [domain],
+    }))
 }
 
 /// The agent asks; nothing is allowed until the customer approves on the consent screen.
@@ -195,6 +249,20 @@ fn web_url() -> String {
         .unwrap_or_else(|| "http://localhost:5173".to_string())
 }
 
+/// One string for `auth.issuer` and both metadata documents: the SDK compares them exactly.
+fn issuer() -> String {
+    web_url().trim_end_matches('/').to_string()
+}
+
+/// The host part of `BEEHIVE_WEB_URL`, which is the host that serves `poppy.json`.
+fn domain() -> String {
+    web_url()
+        .parse::<Uri>()
+        .ok()
+        .and_then(|u| u.host().map(str::to_string))
+        .unwrap_or_default()
+}
+
 fn cents(usd: f64) -> i64 {
     (usd * 100.0).round() as i64
 }
@@ -213,4 +281,16 @@ fn internal(what: &str) -> AppError {
         "internal",
         format!("Something went wrong building the {what}. Try again."),
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::Reason;
+
+    #[test]
+    fn return_request_comes_from_the_contract() {
+        assert!(RETURN_REQUEST.fields.iter().any(|f| f == "order_id"));
+        assert!(RETURN_REQUEST.reasons.contains(&Reason::Damaged));
+    }
 }

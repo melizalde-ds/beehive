@@ -117,12 +117,61 @@
       }
     },
     "PoppyDiscovery": {
-      "description": "GET /.well-known/poppy.json",
+      "description": "GET /.well-known/poppy.json. Our own fields, plus the PAP draft 0.3 fields (protocol_version, organization, agent, auth) that third-party clients check.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["pap_version", "merchant", "endpoints", "scopes_supported", "session_modes", "max_session_seconds"],
+      "required": ["pap_version", "merchant", "endpoints", "scopes_supported", "session_modes", "max_session_seconds", "protocol_version", "organization", "agent", "auth", "return_request"],
       "properties": {
         "pap_version": { "type": "string" },
+        "protocol_version": { "description": "PAP draft version, major.minor.", "type": "string" },
+        "organization": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "domain"],
+          "properties": {
+            "name": { "type": "string" },
+            "domain": { "description": "Host that serves this document.", "type": "string" }
+          }
+        },
+        "agent": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["protocols"],
+          "properties": {
+            "protocols": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["type", "endpoint", "access"],
+                "properties": {
+                  "type": { "type": "string" },
+                  "endpoint": { "description": "Absolute HTTPS URL.", "type": "string" },
+                  "access": { "description": "session = a guest can start; signed_in = sign in first.", "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "auth": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["issuer"],
+          "properties": {
+            "issuer": { "description": "Matches issuer at /.well-known/oauth-authorization-server exactly. Static metadata only: no real OAuth.", "type": "string" }
+          }
+        },
+        "return_request": {
+          "description": "What POST /poppy/returns needs, read from GateRequest and Reason.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["fields", "reasons"],
+          "properties": {
+            "fields": { "type": "array", "items": { "type": "string" } },
+            "reasons": { "type": "array", "items": { "$ref": "#/definitions/Reason" } }
+          }
+        },
         "merchant": {
           "type": "object",
           "additionalProperties": false,

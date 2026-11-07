@@ -197,13 +197,66 @@ export interface TamperRequest {
   link_index: number;
 }
 /**
- * GET /.well-known/poppy.json
+ * GET /.well-known/poppy.json. Our own fields, plus the PAP draft 0.3 fields (protocol_version, organization, agent, auth) that third-party clients check.
  *
  * This interface was referenced by `Beehive`'s JSON-Schema
  * via the `definition` "PoppyDiscovery".
  */
 export interface PoppyDiscovery {
   pap_version: string;
+  /**
+   * PAP draft version, major.minor.
+   */
+  protocol_version: string;
+  organization: {
+    name: string;
+    /**
+     * Host that serves this document.
+     */
+    domain: string;
+  };
+  agent: {
+    /**
+     * @minItems 1
+     */
+    protocols: [
+      {
+        type: string;
+        /**
+         * Absolute HTTPS URL.
+         */
+        endpoint: string;
+        /**
+         * session = a guest can start; signed_in = sign in first.
+         */
+        access: string;
+      },
+      ...{
+        type: string;
+        /**
+         * Absolute HTTPS URL.
+         */
+        endpoint: string;
+        /**
+         * session = a guest can start; signed_in = sign in first.
+         */
+        access: string;
+      }[]
+    ];
+  };
+  auth: {
+    /**
+     * Matches issuer at /.well-known/oauth-authorization-server exactly. Static metadata only: no real OAuth.
+     */
+    issuer: string;
+  };
+  /**
+   * What POST /poppy/returns needs, read from GateRequest and Reason.
+   */
+  return_request: {
+    fields: string[];
+    reasons: Reason[];
+  };
   merchant: {
     id: string;
     name: string;

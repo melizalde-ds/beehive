@@ -117,6 +117,14 @@ async fn main() -> anyhow::Result<()> {
         .route("/health", get(|| async { "ok" }))
         .route("/shop", get(shop))
         .route("/.well-known/poppy.json", get(poppy::discovery))
+        .route(
+            "/.well-known/oauth-protected-resource",
+            get(poppy::protected_resource),
+        )
+        .route(
+            "/.well-known/oauth-authorization-server",
+            get(poppy::oauth_metadata),
+        )
         .route("/poppy/session", post(poppy::create_session))
         .route("/poppy/session/{session_id}", get(poppy::get_session))
         .route("/consent/{session_id}", post(poppy::decide))
