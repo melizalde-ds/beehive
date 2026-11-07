@@ -9,23 +9,27 @@ Built for **Crimson Hacks 2026**, solo. Stack: Vite + React dashboard (static) +
 
 Read `brief/brief.md` before touching any feature. Phases live in `plans/00-general.md`.
 
+Redo: `docs/redo-integration.md` records how the real Redo API behaves (tested against a real store; responses in `redo-fixtures/`). On Redo behavior it beats the brief. It's a record of behavior, not a spec: adopt what the demo needs. Bugs found are in `docs/redo-findings.md`. API shapes we own are in `schema/` (see `schema/README.md`).
+
 This is a hackathon build. `.claude/rules/hackathon.md` wins over any stricter rule.
 
 ## Commands
 
 | Task | Command |
 |------|---------|
-| Install | `[...]` |
-| Dev | `[...]` → `http://localhost:[port]` |
-| Build | `[...]` |
-| Seed demo data | `[...]` |
-| Deploy | `[...]` (ask first) |
-| Live URL | `[...]` |
+| Install | `cd web && pnpm install` (Rust deps install on first `cargo` run) |
+| Dev | `cd server && cargo run` (API on `:3000`), then `cd web && pnpm dev` → `http://localhost:5173` |
+| Dev session (from phase 02) | `cd server && BEEHIVE_DEMO_SESSION=1 cargo run`, token is in the log |
+| Contract check | `cd server && cargo test` · after a schema change: `cd web && pnpm gen:types` |
+| Build | `cd server && cargo build --release` · `cd web && pnpm build` |
+| Seed Redo (phase 03) | not built yet; see `docs/redo-integration.md` |
+| Deploy | not decided (ask first) |
+| Live URL | none yet |
 
 ## Walk the demo
 
-1. Start with `[dev command]`, open `[url]`.
-2. Log in as `[seeded user]` if there is auth.
+1. Start the API and the dashboard (see Dev above), open `http://localhost:5173`.
+2. No login. The demo customer is Kaylee Jensen (`c_1`), and the agent is `muse-demo`.
 3. Follow the demo path in `brief/brief.md` step by step in a browser tool.
 4. Check phone width (375px).
 5. Report what you clicked and what you saw.
@@ -75,7 +79,10 @@ Never:
 
 <!-- Add a line each time an agent makes the same mistake twice. Delete lines that stop being true. -->
 
--
+- `pkill -f <pattern>` matches its own shell command and kills it. Use `pkill -x beehive`, or find the pid with `ps` first.
+- Edit `schema/beehive.schema.json` as text. Rewriting it with a JSON library reformats the whole file and buries the diff.
+- `jsonwebtoken` 11 needs a crypto backend feature; we use `rust_crypto`.
+- `.env` isn't loaded automatically (no dotenv crate yet). Export vars in the shell, or ask before adding `dotenvy`.
 
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence

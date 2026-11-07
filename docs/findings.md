@@ -16,14 +16,17 @@ Add an entry as soon as you hit one. Newest first.
 
 ## Entries
 
-### Redo: docs are agent-ready, but REST v2.2 has no risk score or label purchase
+### Redo: tested against a real store, and what the docs don't tell you
 
-- **When:** before phase 02, 2026-11-06 evening
+- **When:** 2026-11-06/07, smoke test against a real Redo store (see `docs/redo-integration.md`)
 - **What we found:**
-  - Redo publishes `https://developers.redo.com/llms.txt`, `llms-full.txt`, and an OpenAPI 3.1 spec at `https://developers.redo.com/api-schema/openapi.yaml` (v2.2.1). We could plan the integration from the spec instead of hand-writing notes.
-  - The two endpoints Beehive needs are there: `POST /stores/{storeId}/custom/orders` (sync orders, so a shop on any platform becomes returnable) and `POST /stores/{storeId}/returns` (create a return, `returns_write` scope).
-  - The spec mentions "risk" 0 times. A return has a `status` instead: `open` (approved, awaiting shipment), `needs_review`, `in_review`, `rejected`, and others.
-  - There is no `POST /stores/{storeId}/shipments/buy` in REST v2.2. Return create accepts an optional `label` with `postageLabelUrl`. Unverified lead: the v3 GraphQL changelog mentions a `purchaseCarrierShipment` mutation.
-- **Evidence:** `openapi.yaml` paths list (`/stores/{storeId}/custom/orders`, `/stores/{storeId}/returns`, `/returns/{returnId}/status`), and the `return-status.schema` enum in it.
-- **What we did:** Aligned our contract with Redo: `RedoResult` now carries Redo's own return `status` (no risk score), and the label comes from the return's `postageLabelUrl`. Saved the spec as `docs/redo/openapi.yaml`. Bonus: `POST /stores/{storeId}/returns` takes an `Idempotency-Key` header, so the gate's `request_id` goes straight through and Redo also refuses a double refund.
-- **Pitch line:** "Redo's docs ship llms.txt and OpenAPI, so an agent-built plugin could read them directly. That's the same idea Beehive brings to shoppers' agents."
+  - Good: Redo publishes `llms.txt`, `llms-full.txt` and an OpenAPI 3.1 spec (`docs/redo/openapi.yaml`), so agents can plan an integration straight from the docs. Custom order sync makes a shop on any platform returnable.
+  - Good: return import takes an `idempotencyKey`. A replay with the same key returned the same `returnId` (`redo-fixtures/return-import.json` and `return-replay.json`), so there's no double return.
+  - Gap: `GET /returns/{returnId}` returns 500 for imported returns (`redo-fixtures/return-get.json`), so there's no way to read the label for an imported return.
+  - Gap: `GET /stores/{storeId}/returns` doesn't list imported returns.
+  - Gap: a `productId` that isn't Redo's `prd_` id gets a 400 with `"detail":"[object Object]"`, which doesn't say what's wrong.
+  - Gap: a bulk import can answer 200 and still contain per-item errors in `results[].error`.
+  - No risk score on returns, and no `/shipments/buy` in REST v2.2.
+- **Evidence:** `docs/redo-findings.md` (bugs with steps, return ids and questions for Redo), `docs/redo-integration.md`, `redo-fixtures/*.json`, `docs/redo/openapi.yaml`
+- **What we did:** Built to the tested call order. The Beehive gate blocks replays before Redo; Redo's `idempotencyKey` is the backup. The dashboard reads our own evidence store, not Redo's list. The label is best effort.
+- **Pitch line:** "We smoke-tested Redo's API for real. Idempotency held up, and we found three rough edges your team can fix in an afternoon."
