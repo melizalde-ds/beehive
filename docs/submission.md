@@ -24,10 +24,11 @@ The demo shop is Cache Valley Honey Co., a made-up Utah honey farm:
 
 ## How we built it
 
-- **PAP front door (Rust, Axum):** discovery, `POST /poppy/session`, a consent screen, and `POST /poppy/returns`. The session token is a short-lived JWT with a unique token id.
-- **Rust gate:** every request runs the same checks in order, and the first failure blocks it: rate limit per agent, session, agent identity, expiry, replay (token id), scope, idempotency (request id), order, refund cap.
+- **PAP front door (Rust, Axum):** discovery, `POST /poppy/session`, a consent screen, `GET /poppy/orders` (the customer's own orders, needs `poppy:read`), and `POST /poppy/returns`. The session token is a short-lived JWT with a unique token id.
+- **Rust gate:** every request runs the same checks in order, and the first failure blocks it: session, rate limit per agent (counted only once the token checks out), agent identity, expiry, replay (token id), scope, idempotency (request id), order (the price comes from the order, not the agent), refund cap.
 - **Redo handoff:** a passed request becomes a return through Redo's real return import, with the request id as Redo's `idempotencyKey`. Beehive makes no return decisions; Redo does.
 - **Proof:** each step (discovery, session, consent, request, gate decision, Redo result) is one link in a SHA-256 hash chain. `GET /verify/{return_id}` recomputes it and reports the first broken link.
+- **Tests:** `cargo test` runs 11 tests, 7 of them on the gate (pass, over the cap, duplicate, expired token, a price that doesn't match the order, $0 or less, junk tokens against the rate limit), plus contract checks that every schema example and the seed parse.
 - **Dashboard:** Vite + React, live over server-sent events.
 - **One contract:** `schema/beehive.schema.json` generates both the Rust types (typify) and the TypeScript types.
 - **Hosting:** a Docker build on AWS Lightsail behind Caddy, using sslip.io for the HTTPS hostname. The live URL runs against a real Redo store, with a mock shaped like Redo's real responses as a fallback.
@@ -73,7 +74,6 @@ Rust, Axum, Tokio, jsonwebtoken, sha2 (SHA-256), reqwest, serde, typify, tower-h
 
 - **Live demo:** https://32-189-214-147.sslip.io
 - **Repo:** https://github.com/melizalde-ds/crimson-hacks-project
-- **Demo video:** [TODO: link the backup recording]
 
 ## Prize categories
 

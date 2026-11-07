@@ -18,12 +18,17 @@
 | `POST /poppy/session` | `SessionRequest` | `SessionResponse` | 04 |
 | `GET /poppy/session/:session_id` | | `SessionResponse` | 04 |
 | `POST /consent/:session_id` | `ConsentDecision` | `SessionResponse` | 04 (called by the consent screen, 05) |
+| `GET /poppy/session` | | how to open a session (help for agents that send a GET) | 08 |
+| `GET /poppy/orders` | `Authorization: Bearer <session_token>` | `OrderList` | 08 (needs `poppy:read`) |
 | `POST /poppy/returns` | `GateRequest` | `GateResponse` | 04 (forwards to the gate) |
 | `POST /gate/returns` | `GateRequest` | `GateResponse` | 02 |
 | `GET /evidence/:return_id` | | `Evidence` | 02 |
 | `GET /verify/:return_id` | | `VerifyResult` | 02 |
 | `POST /evidence/:return_id/tamper` | `TamperRequest` | `Evidence` | 02 (demo only) |
 | `GET /returns` | | `ReturnList` | 02 |
+| `GET /returns/stream` | | SSE, one `changed` event per gate decision | 05 |
+| `GET /.well-known/oauth-protected-resource`, `GET /.well-known/oauth-authorization-server` | | static JSON for PAP clients (no real OAuth) | 08 |
+| `POST /demo/reset` (`?empty=1`) | `{}` | `ReturnList` | 07 (demo only: re-seeds the cold open, or empties the shop) |
 
 Every non-2xx response has an `ApiError` body.
 

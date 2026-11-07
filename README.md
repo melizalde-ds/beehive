@@ -22,7 +22,7 @@ Built solo for Crimson Hacks 2026. The demo shop is Cache Valley Honey Co., a ma
    ```bash
    BEEHIVE_URL=https://32-189-214-147.sslip.io/api node agent/agent.ts --reset
    ```
-   `--reset` empties the demo shop first. The script prints a consent link. Open it, approve write access with a $50 cap, and watch the dashboard: the $36 passes, then the $120 and the replay are blocked.
+   `--reset` empties the demo shop first. The script prints a consent link. Open it, approve write access with a $50 cap, and watch the dashboard: the agent reads Kaylee's orders, the $36 passes, then the $120 and the replay are blocked.
 
 The live demo shares one in-memory state, so you may see another visitor's run. Click **Reset demo** on the dashboard to bring back the three requests above.
 
@@ -48,7 +48,7 @@ flowchart LR
 The Hash-Chain Comb: agent, gate, Redo.
 
 1. **PAP front door** (Rust, Axum). The agent finds the shop at `/.well-known/poppy.json`, asks for a session at `POST /poppy/session`, and the customer approves the scopes and a refund cap on a consent screen. The session token is a short-lived JWT with a unique token id. The agent reads the customer's orders at `GET /poppy/orders` (needs `poppy:read`), then files at `POST /poppy/returns`.
-2. **Rust gate.** Every request runs the same checks in order, and the first one that fails blocks it: rate limit per agent, session, agent identity, expiry, replay (token id), scope, idempotency (request id), order, refund cap. The agent can only ask. A blocked request never reaches Redo.
+2. **Rust gate.** Every request runs the same checks in order, and the first one that fails blocks it: session, rate limit per agent (counted only once the token checks out), agent identity, expiry, replay (token id), scope, idempotency (request id), order (the price comes from the order, not the agent), refund cap. The agent can only ask. A blocked request never reaches Redo.
 3. **Redo handoff.** A passed request becomes a Redo return through Redo's return import, with the request id as Redo's `idempotencyKey`. From there it's Redo's return: Beehive makes no return decisions. Redo has no field for "an agent filed this", so Beehive writes which agent, for whom, under what cap, and the gate's hash into the return's `notes`.
 4. **Proof.** Each step (discovery, session, consent, request, gate decision, Redo result) is one link in a SHA-256 hash chain. `GET /verify/{return_id}` recomputes it and reports the first broken link.
 5. **Dashboard** (Vite + React). Shows each agent request live: which agent, on whose behalf, what was allowed, the gate's reason, Redo's result, and the proof.
