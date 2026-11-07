@@ -1,12 +1,12 @@
 {
   "pap_version": "0.1-draft",
-  "merchant": { "id": "cache-valley-honey", "name": "Cache Valley Honey Co.", "platform": "Redo" },
+  "merchant": { "id": "cache-valley-honey", "name": "Utah Cache Valley Honey Co.", "platform": "Redo" },
   "endpoints": { "session": "/poppy/session", "returns": "/poppy/returns", "orders": "/poppy/orders" },
   "scopes_supported": ["poppy:read", "poppy:write"],
   "session_modes": ["guest", "signed_in"],
   "max_session_seconds": 900,
   "protocol_version": "0.3",
-  "organization": { "name": "Cache Valley Honey Co.", "domain": "32-189-214-147.sslip.io" },
+  "organization": { "name": "Utah Cache Valley Honey Co.", "domain": "32-189-214-147.sslip.io" },
   "agent": {
     "protocols": [{ "type": "poppy", "endpoint": "https://32-189-214-147.sslip.io/poppy/session", "access": "session" }]
   },

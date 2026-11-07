@@ -39,7 +39,7 @@ Not in MVP: human chat (Redo has it), our own return decisions (Redo does them),
 - `POST /stores/{storeId}/shipments/buy`: return label for approved returns
 
 ## Seed data (invented shop)
-Cache Valley Honey Co. (fictional, modeled on Utah's Own producers)
+Utah Cache Valley Honey Co. (fictional, modeled on Utah's Own producers)
 - Honey Subscription Box $28/mo · Raw Wildflower Honey $14 · Beeswax Candle Set $36 · Honeycomb Gift Crate $120
 - 3 customers with seeded orders
 

@@ -6,7 +6,7 @@ Beehive is a plugin for Redo that lets a customer's own AI agent file returns an
 
 **Live:** https://32-189-214-147.sslip.io
 
-Built solo for Crimson Hacks 2026. The demo shop is Cache Valley Honey Co., a made-up Utah honey farm.
+Built solo for Crimson Hacks 2026. The demo shop is Utah Cache Valley Honey Co., a made-up honey farm.
 
 **Project write-up:** [`docs/submission.md`](docs/submission.md), the full story (inspiration, how it's built, challenges, what's next).
 

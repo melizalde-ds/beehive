@@ -69,7 +69,7 @@ PAP lets an agent start as a **guest** (enough for a returns-policy question), a
 
 No code needed: Caddy's access log shows every path Muse hits. Run `tail -f` on it during each step.
 
-1. Ask Muse a guest-only question: "What's Cache Valley Honey Co.'s return policy?" Expect a `GET /.well-known/poppy.json`. If nothing shows up, Muse isn't discovering the domain and the test is over.
+1. Ask Muse a guest-only question: "What's Utah Cache Valley Honey Co.'s return policy?" Expect a `GET /.well-known/poppy.json`. If nothing shows up, Muse isn't discovering the domain and the test is over.
 2. Ask Muse to "return my broken candle set". Then read the log:
    - `POST /poppy/session` with `mode: guest`, then waiting on our `consent_url` means **no sign-in needed**. Our flow works, so go on to step 3.
    - `GET /.well-known/oauth-authorization-server`, then a hit on its `authorization_endpoint` / `token_endpoint` means **Muse wants real OAuth sign-in**. Stop: that's out of scope. Pitch it as "Next".

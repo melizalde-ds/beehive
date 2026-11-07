@@ -20,7 +20,7 @@ Run for each seeded product and order. Both calls are upserts, so re-running is 
 
 1. **Upload product:** `POST /stores/{storeId}/products/bulk-upload`
    ```json
-   {"products":[{"title":"Beeswax Candle Set","external_id":"cvh-candle-set","vendor":"Cache Valley Honey Co.",
+   {"products":[{"title":"Beeswax Candle Set","external_id":"cvh-candle-set","vendor":"Utah Cache Valley Honey Co.",
      "variants":[{"sku":"CVH-CANDLE-SET","price":3600,"currency":"USD"}]}]}
    ```
    - `price` is an **integer in cents**.

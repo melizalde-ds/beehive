@@ -13,7 +13,7 @@ import type { SessionResponse } from '@/types/generated/beehive'
 
 export function ConsentScreen({ sessionId }: { sessionId: string }) {
   const session = useSession(sessionId)
-  const shopName = useShop().data?.shop.name ?? 'Cache Valley Honey Co.'
+  const shopName = useShop().data?.shop.name ?? 'Utah Cache Valley Honey Co.'
 
   return (
     <main className="mx-auto max-w-md px-4 py-8">

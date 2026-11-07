@@ -63,7 +63,7 @@ The deploy is done (`890fe10`), so four tracks run in separate sessions. Each on
 
 ### Track E: Deploy + Muse test (main session)
 
-- [ ] Muse probe now: add `log` to `deploy/Caddyfile` and redeploy. You ask Muse about Cache Valley Honey Co. while I watch the request log (`journalctl -u caddy -f`). What Muse fetches goes to track A.
+- [ ] Muse probe now: add `log` to `deploy/Caddyfile` and redeploy. You ask Muse about Utah Cache Valley Honey Co. while I watch the request log (`journalctl -u caddy -f`). What Muse fetches goes to track A.
 - [ ] ~10:00: merge A, then B, into `phase-08-last-mile`, then one `scripts/deploy.sh`. Merge C and D whenever they're ready (static files and docs, so a redeploy takes about a minute).
 - [ ] SDK check: `scripts/validate_pap.py 32-189-214-147.sslip.io`, version pinned.
 - [ ] Muse ladder, 10:10–10:40, see `stretch-muse.md`. Record each rung as we reach it.

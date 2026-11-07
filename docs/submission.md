@@ -16,7 +16,7 @@ I had to dig for AllTrails' support chat to get my refund. Soon my own agent wil
 
 Beehive is a plugin for Redo. A customer's AI agent finds the shop at `/.well-known/poppy.json`, opens a PAP session, and the customer approves write access with a refund cap on a consent screen. The agent then files a return. A Rust gate checks who the agent is and what the customer allowed. Only a request that passes reaches Redo, which opens a real return. The shop's dashboard shows each request live: which agent, on whose behalf, what was allowed, the gate's reason, Redo's result, and a "Verify proof" button.
 
-The demo shop is Cache Valley Honey Co., a made-up Utah honey farm:
+The demo shop is Utah Cache Valley Honey Co., a made-up honey farm:
 - **Passed:** a $36 Beeswax Candle Set, arrived broken. It's under Kaylee's $50 cap, so Redo opened the return.
 - **Blocked:** a $120 Honeycomb Gift Crate. Over the cap, so it never reached Redo.
 - **Blocked:** the same $36 request sent again. A duplicate, so no second refund.

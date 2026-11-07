@@ -1,6 +1,6 @@
 # Phase 01: Contract + seed data
 
-**Goal:** Lock every shape that crosses Rust ↔ TypeScript, seed Cache Valley Honey Co., and stand up empty runnable Axum and Vite apps that both use the generated types. This unblocks phases 02-05.
+**Goal:** Lock every shape that crosses Rust ↔ TypeScript, seed Utah Cache Valley Honey Co., and stand up empty runnable Axum and Vite apps that both use the generated types. This unblocks phases 02-05.
 **Brief requirements covered:** API contract (lock first), Seed data, Redo mock result shape (`redo` object only), scaffold step at 6:15.
 **Depends on:** nothing
 **Touches only:** `schema/`, `seed/`, `server/`, `web/`, `.env.example`, `plans/phase-01-contract.md`

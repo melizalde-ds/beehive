@@ -28,7 +28,7 @@ Add an entry as soon as you hit one. Newest first.
 ### Meta Muse: it finds PAP discovery but only sends GETs, so it can't open a session
 
 - **When:** phase 08 track E, 2026-11-06 ~22:50, live URL with Caddy access logging
-- **What we found:** Asked to return a candle set at Cache Valley Honey Co., Muse (IP 104.29.192.79, desktop Chrome user agent) loaded the dashboard, `/api/shop`, `/api/returns`, the proof endpoints and `/.well-known/poppy.json`. Then it sent `GET /poppy/session` three times. PAP opens a session with a `POST`, so each got a 405. Its browsing tool reads pages; we saw no POST, no `DPoP` header and no OAuth calls.
+- **What we found:** Asked to return a candle set at Utah Cache Valley Honey Co., Muse (IP 104.29.192.79, desktop Chrome user agent) loaded the dashboard, `/api/shop`, `/api/returns`, the proof endpoints and `/.well-known/poppy.json`. Then it sent `GET /poppy/session` three times. PAP opens a session with a `POST`, so each got a 405. Its browsing tool reads pages; we saw no POST, no `DPoP` header and no OAuth calls.
 - **Evidence:** `journalctl -u caddy` on the box: `GET /poppy/session 405` ×3 from 104.29.192.79, right after `GET /.well-known/poppy.json 200`
 - **What we did:** Nothing yet. Rung 1 of the Muse ladder (`plans/stretch-muse.md`).
 - **Pitch line:** "Muse found our PAP door on its own, then knocked with a GET. The step from reading a shop to acting for a customer is the gap."

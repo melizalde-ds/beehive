@@ -20,7 +20,7 @@ export function Dashboard() {
           <img src="/favicon.svg" alt="" className="size-6" />
           Beehive · shop dashboard
         </p>
-        <h1 className="text-2xl font-semibold">{shop.data?.shop.name ?? 'Cache Valley Honey Co.'}</h1>
+        <h1 className="text-2xl font-semibold">{shop.data?.shop.name ?? 'Utah Cache Valley Honey Co.'}</h1>
         <p className="text-sm text-muted-foreground">
           Returns filed by customers' own AI agents. Beehive checks each one, Redo makes the call.
         </p>

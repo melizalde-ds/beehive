@@ -2,7 +2,7 @@
 
 **Assumptions:** No rubric file exists, so the brief's three Targets stand in for it (Commerce, Technical Build, Overall). The personal agent script is TypeScript, run with Node, so no Python is needed. The stack is Vite + Rust. A Vite build is static files only, so the PAP front door lives in the Rust (Axum) service. Vite holds the dashboard and the consent screen.
 
-**Demo path (one sentence):** The personal agent script discovers Cache Valley Honey Co. through `poppy.json`, gets a write session capped at $50, and files a $36 broken-candle return. The Rust gate passes it, Redo approves it and issues a label, and the shop dashboard updates live. The same agent is then blocked on the $120 crate (over the cap) and on a replay of the first request. Verify proof shows green, then breaks at the edited link after a one-byte tamper.
+**Demo path (one sentence):** The personal agent script discovers Utah Cache Valley Honey Co. through `poppy.json`, gets a write session capped at $50, and files a $36 broken-candle return. The Rust gate passes it, Redo approves it and issues a label, and the shop dashboard updates live. The same agent is then blocked on the $120 crate (over the cap) and on a replay of the first request. Verify proof shows green, then breaks at the edited link after a one-byte tamper.
 
 **Wow moment:** `brief/brief.md`, Demo script steps 3 and 4: the $120 over-cap block, the replay block, and verify + tamper.
 

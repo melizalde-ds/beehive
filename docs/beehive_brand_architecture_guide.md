@@ -6,7 +6,7 @@
 ## 1. Core Identity & Positioning
 * **One-Liner:** Beehive is a plugin for Redo that lets a customer's own AI agent handle returns and claims through the Personal Agent Protocol (PAP). It checks who the agent is and what the customer allowed, then hands the work to Redo.
 * **Positioning (Plugin, Not Competitor):** *"Redo's MCP server lets the merchant's AI in. Beehive opens the other door: the customer's own AI agent. Redo's review and fraud agents still make the call."*
-* **Brand Archetype:** *Utah Craft meets Cryptographic Proof* — Warm, local Utah honey farm aesthetics (**Cache Valley Honey Co.**) paired with high-contrast, deterministic Rust security and SHA-256 hash-chain verification.
+* **Brand Archetype:** *Utah Craft meets Cryptographic Proof* — Warm, local Utah honey farm aesthetics (**Utah Cache Valley Honey Co.**) paired with high-contrast, deterministic Rust security and SHA-256 hash-chain verification.
 * **Tagline:** *The Personal Agent Gate for Redo Merchants.*
 
 ---
@@ -66,7 +66,7 @@ Three interlocking hexagons representing **Personal Agent (Gold) → Beehive Rus
 
 ---
 
-## 5. Seed Data & 3-Minute Demo Flow (`Cache Valley Honey Co.`)
+## 5. Seed Data & 3-Minute Demo Flow (`Utah Cache Valley Honey Co.`)
 
 ### Seed Catalog
 1. **Beeswax Candle Set** — `$36.00` (Demo Step 1: Passes `$50` cap → Redo `LOW` risk → Approved + Label)
